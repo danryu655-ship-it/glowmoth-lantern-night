@@ -55,5 +55,4 @@ const dossier = buildDossier(out, {
 });
 writeFileSync(join(out, 'dossier.json'), dossier);
 
-const sourceCount = JSON.parse(dossier).game?.source_files ?? 0;
-console.log(`handed in game/ (${indexBytes} bytes of index.html, ${sourceCount} source files) and ${out}/dossier.json`);
+console.log(`handed in game/ (${indexBytes} bytes of index.html) and ${join(out, 'dossier.json')} (${dossier.length} bytes)`);
