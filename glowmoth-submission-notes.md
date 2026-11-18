@@ -21,9 +21,10 @@ Canon story: docs/kronik-luminaria.md ("Kronik Luminaria", written by the user 1
 - v1.4.5 (versionCode 11, 18 Nov ~14:13): Kronik Luminaria story — 2-page prologue, dawn texts nights 1-9, 5-beat cutscenes, 2-page epilogue; story screens use a dark panel; APK 11,049,954 bytes, sha256 41d24f9c…
 - v1.4.6 (versionCode 12, 18 Nov ~14:20): dawn story wrap fix (long Kronik lines ran off the screen edges); night-9 story line now shows on the boss-warning dawn screen; APK 11,050,258 bytes, sha256 a0a26e7b…
 - v1.5.0 (versionCode 13, 18 Nov ~16:25): Skill & Badge screen — display-only guide to the 4 skills (Flare Burst, Mote Magnet, Lulu's Shield, Dewdrop Vitality) with the user's own SVG icons, plus 3 earnable badges (Lumi night 3, Lulu night 6, Dark Pekat night 10, kept in localStorage); SKILL button on the title screen (tap, or K on PC); APK 11,063,745 bytes, sha256 583351d6…
+- v1.6.0 "Cahaya Baru" (versionCode 14, 18 Nov ~17:33): the user's new asset pack — parallax layers 1+2 drift in-game (title keeps the GLOWMOTH LEGENDS artwork), obsidian arena on boss nights, Shadow Spider Queen boss on nights 20/40/60 (Dark Pekat 10/30/50), Void Scorpion hazard from night 4 (lunge; Flare only stuns), Koko joins night 9 (scorches a shade every 8 s) + Zephyr joins night 12 (hazards 25% slower), skin picker on the title (Luma / Golden Sun / Cyber Neon, persisted), cutscene illustrations as full-screen opening cards (nights 3/6 + ending), Skill screen 2 columns x 3 rows + 4th badge (Ratu, night 20), dawn story +3 lines (nights 10/11/12), epilogue only on a Dark Pekat defeat; visual fixes: dark pill behind the top-centre HUD (moon), endless nights show just "NIGHT n", card hint on a dark chip; APK 11,117,564 bytes, sha256 aa63f7c8…, release https://github.com/danryu655-ship-it/glowmoth-lantern-night/releases/download/v1.6.0/glowmoth-android-v1.6.0.apk
 - All three install over each other (same signing certificate 2eb6e7ca…)
 
 ## Planned next
 
-- v1.6.0 (not decided yet): Quest system — rescued characters playable after completing their quest (Lumi magnet from night 1, Lulu shield from night 1)
+- Quest system (user decision pending): quest board — rescued characters playable after completing their quest (Lumi magnet from night 1, Lulu shield from night 1)
 - Deferred from the Kronik: mid-night dialogues (nights 5 + 9), boss phase 2 Enrage below 50%
