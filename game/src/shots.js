@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss.
+// The staged frames behind ?shot=title|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 
 function placeMote(x, y, phase) {
@@ -149,6 +149,34 @@ export function stageShot(name, world, best) {
     state.player.invuln = 1.2;
     state.particles = [];
     return { screen: SCREEN_CUTSCENE, best, cutscene: { night: 10, boss: true, beat: 0, beatTime: 0 } };
+  }
+
+  // ANDROID BUILD ONLY (v1.4.5) — prologue (page 1: Luminaria and the four
+  // ancient lanterns) and epilogue (the dawn of victory after night 10).
+  if (name === 'prologue') {
+    state.night = 1;
+    state.score = 0;
+    state.lives = 3;
+    lightLanterns(state, 0);
+    state.motes = [];
+    state.hazards = [];
+    state.dew = null;
+    state.particles = [];
+    return { screen: SCREEN_PROLOGUE, best, prologuePage: 0 };
+  }
+
+  if (name === 'epilogue') {
+    state.night = 10;
+    state.score = 8400;
+    state.bonus = 1000;
+    state.lives = 4;
+    lightLanterns(state, 4);
+    state.motes = [];
+    state.hazards = [];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_EPILOGUE, best, epiloguePage: 0 };
   }
 
   if (name === 'victory') {

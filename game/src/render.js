@@ -11,6 +11,8 @@ export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
 export const SCREEN_CUTSCENE = 'cutscene';
+export const SCREEN_PROLOGUE = 'prologue';
+export const SCREEN_EPILOGUE = 'epilogue';
 export const SCREEN_OVER = 'over';
 export const SCREEN_VICTORY = 'victory';
 
@@ -1446,6 +1448,91 @@ export function createRenderer(canvas) {
     void time;
   }
 
+  // ANDROID BUILD ONLY (v1.4.5) — prologue: the story of Luminaria, shown
+  // once before the first run, in two pages: the world, then Dark Pekat's
+  // tragedy. Epilogue: the dawn of victory, shown once when the boss
+  // first falls.
+  function drawPrologueScreen(state, page, time) {
+    const pages = STRINGS.prologue;
+    const pageIndex = Math.max(0, Math.min(page ?? 0, pages.length - 1));
+    const isLast = pageIndex >= pages.length - 1;
+    const title = pageIndex === 0 ? STRINGS.prologueTitle : 'DARK PEKAT';
+    const titleColor = pageIndex === 0 ? C.amber : '#a98bff';
+    const titleGlow = pageIndex === 0 ? 'rgba(255, 207, 107, 0.5)' : 'rgba(169, 139, 255, 0.5)';
+    overlay(0.58);
+    label(ctx, 'PROLOG', W / 2, 92, { font: `700 18px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 6 });
+    const titleLines = wrapLines(title, 1080, `700 44px ${TITLE_FONT}`);
+    let titleY = 140;
+    for (const line of titleLines) {
+      label(ctx, line, W / 2, titleY, { font: `700 44px ${TITLE_FONT}`, color: titleColor, align: 'center', spacing: 4, glow: 22, glowColor: titleGlow });
+      titleY += 54;
+    }
+    // Story panel: the long text sits on a dark panel so the lanterns
+    // behind it never strike through the lines.
+    ctx.save();
+    roundedRect(ctx, 140, 190, 1000, 390, 22);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.restore();
+    let y = 222;
+    for (const paragraph of pages[pageIndex]) {
+      const lines = wrapLines(paragraph, 920, `italic 500 19px ${TITLE_FONT}`);
+      for (const line of lines) {
+        label(ctx, line, W / 2, y, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+        y += 27;
+      }
+      y += 14;
+    }
+    for (let index = 0; index < pages.length; index += 1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(W / 2 + (index - (pages.length - 1) / 2) * 28, 600, index === pageIndex ? 7 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = index === pageIndex ? C.amber : 'rgba(169, 183, 201, 0.5)';
+      ctx.fill();
+      ctx.restore();
+    }
+    drawButton(isLast ? STRINGS.prologueBegin : STRINGS.prologueNext, 650);
+    void state;
+    void time;
+  }
+
+  function drawEpilogueScreen(state, page, time) {
+    const pages = [STRINGS.epilogue.slice(0, 2), STRINGS.epilogue.slice(2)];
+    const pageIndex = Math.max(0, Math.min(page ?? 0, pages.length - 1));
+    const isLast = pageIndex >= pages.length - 1;
+    overlay(0.58);
+    label(ctx, STRINGS.epilogueTitle, W / 2, 132, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    // Story panel, same as the prologue: the long text never collides with
+    // the lanterns behind it.
+    ctx.save();
+    roundedRect(ctx, 140, 190, 1000, 390, 22);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.restore();
+    let y = 222;
+    for (const paragraph of pages[pageIndex]) {
+      const lines = wrapLines(paragraph, 920, `italic 500 19px ${TITLE_FONT}`);
+      for (const line of lines) {
+        label(ctx, line, W / 2, y, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+        y += 27;
+      }
+      y += 14;
+    }
+    if (isLast) {
+      label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, y + 20, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
+    }
+    for (let index = 0; index < pages.length; index += 1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(W / 2 + (index - (pages.length - 1) / 2) * 28, 600, index === pageIndex ? 7 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = index === pageIndex ? C.amber : 'rgba(169, 183, 201, 0.5)';
+      ctx.fill();
+      ctx.restore();
+    }
+    drawButton(isLast ? STRINGS.next : STRINGS.prologueNext, 650);
+    void time;
+  }
+
   function drawDawnScreen(state, time, demo = false) {
     overlay(0.58);
     // ANDROID BUILD ONLY (v1.3.1) — on the nights Lumi (3) and Lulu (6) join,
@@ -1533,6 +1620,8 @@ export function createRenderer(canvas) {
     drawField(state, time, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED);
     ctx.restore();
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
+    else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
+    else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time);
     else if (screen === SCREEN_CUTSCENE) {
       if (extra.cutscene) drawCutsceneScreen(state, extra.cutscene, time);
       else drawDawnScreen(state, time, extra.demo === true);

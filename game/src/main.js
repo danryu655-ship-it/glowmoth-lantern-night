@@ -3,12 +3,12 @@
 // and victory. ?shot=title|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BEST_KEY, BOSS, CUTSCENE, CUTSCENES, RUN, STEP } from './config.js';
+import { BEST_KEY, BOSS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, PROLOGUE_KEY, RUN, STEP, STRINGS } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import {
-  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY,
+  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import {
   createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
@@ -55,7 +55,7 @@ function runShot(name) {
   const scene = stageShot(name, world, best);
   let painted = 0;
   function paint() {
-    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene });
+    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else {
@@ -70,6 +70,8 @@ function runGame() {
   const input = createInput(canvas);
   let screen = SCREEN_TITLE;
   let cutscene = null;
+  let prologuePage = 0;
+  let epiloguePage = 0;
   let best = readBest();
   let accumulator = 0;
   let ambientClock = 0;
@@ -91,15 +93,45 @@ function runGame() {
     status.textContent = message;
   }
 
-  function startRun() {
-    world.reset();
-    accumulator = 0;
+  // ANDROID BUILD ONLY (v1.4.5) — one-time story flags in localStorage.
+  function storySeen(key) {
+    try {
+      return window.localStorage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function markStorySeen(key) {
+    try {
+      window.localStorage.setItem(key, '1');
+    } catch {
+      // Private windows keep the flag for this visit only.
+    }
+  }
+
+  function startPlay() {
     screen = SCREEN_PLAY;
-    audio.unlock();
     audio.play('start');
     announce(ENDLESS
   ? `Night 1. ${RUN.lives} lives. Collect golden motes to light four lanterns — the nights go on as long as you can fly.`
   : `Night 1 of ${RUN.nightsToWin}. ${RUN.lives} lives. Collect golden motes to light four lanterns.`);
+  }
+
+  function startRun() {
+    world.reset();
+    accumulator = 0;
+    audio.unlock();
+    // ANDROID BUILD ONLY (v1.4.5) — the prologue plays once, before the
+    // first run. The demo skips it.
+    if (!demo && !storySeen(PROLOGUE_KEY)) {
+      prologuePage = 0;
+      screen = SCREEN_PROLOGUE;
+      audio.play('start');
+      announce('Padang rumput Luminaria. Tekan Enter untuk memulai.');
+    } else {
+      startPlay();
+    }
   }
 
   function finishRun(victory) {
@@ -126,6 +158,29 @@ function runGame() {
 
     if (screen === SCREEN_TITLE) {
       if (confirm || pointer) startRun();
+      return;
+    }
+    // ANDROID BUILD ONLY (v1.4.5) — the prologue leads into night 1; the
+    // epilogue leads into the dawn card.
+    if (screen === SCREEN_PROLOGUE) {
+      if (confirm || pointer) {
+        if (prologuePage < STRINGS.prologue.length - 1) {
+          prologuePage += 1;
+        } else {
+          markStorySeen(PROLOGUE_KEY);
+          startPlay();
+        }
+      }
+      return;
+    }
+    if (screen === SCREEN_EPILOGUE) {
+      if (confirm || pointer) {
+        if (epiloguePage < 1) {
+          epiloguePage += 1;
+        } else {
+          enterDawn();
+        }
+      }
       return;
     }
     if (screen === SCREEN_OVER || screen === SCREEN_VICTORY) {
@@ -248,6 +303,15 @@ function runGame() {
         autoClock = 0;
         audio.play('clear');
         announce(CUTSCENES[world.state.night].beats[0].text);
+      // ANDROID BUILD ONLY (v1.4.5) — the first boss defeat ends in the
+      // epilogue, once, before the dawn card.
+      } else if (world.state.bossBonus > 0 && !storySeen(EPILOGUE_KEY)) {
+        markStorySeen(EPILOGUE_KEY);
+        epiloguePage = 0;
+        screen = SCREEN_EPILOGUE;
+        autoClock = 0;
+        audio.play('clear');
+        announce('Fajar kemenangan. Dark Pekat kalah!');
       } else {
         enterDawn();
       }
@@ -313,7 +377,12 @@ function runGame() {
         }
       }
     }
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene });
+    // The demo rests on the epilogue, then moves to the dawn card.
+    if (demo && screen === SCREEN_EPILOGUE && autoClock > 3.2) {
+      autoClock = 0;
+      enterDawn();
+    }
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage });
     input.endFrame();
   }
 

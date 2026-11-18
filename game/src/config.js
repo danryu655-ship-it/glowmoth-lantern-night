@@ -136,16 +136,51 @@ export const STRINGS = {
   dawn: 'NIGHT SURVIVED',
   dawnSub: 'The lanterns hold the dark at bay.',
   // ANDROID BUILD ONLY — story line shown on each dawn screen (index: night - 1).
+  // Kronik Luminaria: nights 3 and 6 are carried by their cutscenes, so their
+  // lines stay short; night 9 has no dawn text in the Kronik (it gives the
+  // pre-sleep dialogue instead, deferred) — the line below is Rias's, in the
+  // same voice, so the dawn card is never empty.
   dawnStory: [
-    'Malam pertama berlalu. Satu lampion menyala — dari kejauhan, Lumi dan Lulu masih memanggil.',
-    'Malam kedua berlalu. Bayangan Dark Pekat semakin gelap, tapi cahaya Luma semakin terang.',
+    'Malam pertama berlalu. Satu per satu lampion berhasil dipertahankan, namun dari kejauhan terdengar tawa dingin Dark Pekat yang menggema di langit.',
+    'Malam kedua berakhir. Cahaya Luma mulai stabil, dan di cakrawala barat, terlihat pendaran hijau mint samar-samar berkedip meminta tolong.',
     'Malam ketiga berlalu. Lumi bebas! Dia bergabung dengan Luma — cahayanya menarik serpihan dari kejauhan.',
-    'Malam keempat berlalu. Lumi dan Luma menjaga taman bersama.',
-    'Malam kelima berlalu. Kegelapan semakin pekat — tapi dua cahaya kini terbang bersama.',
+    'Malam keempat berlalu. Dua lentera kecil yang terbang bersama membuktikan bahwa kegelapan bukanlah penguasa mutlak di padang rumput ini.',
+    'Malam kelima dilewati dengan luka sayap yang perih, tapi di depan mata, kepompong es hitam tempat Lulu dikurung sudah berada dalam jangkauan.',
     'Malam keenam berlalu. Lulu bebas! Ketiga cahaya kini terbang bersama.',
+    'Malam ketujuh berakhir. Angin mendadak berhenti bertiup. Keheningan yang menakutkan menyelimuti padang rumput... tanda sang badai sesungguhnya segera tiba.',
+    'Malam kedelapan bertahan. Tiga sahabat ini tidak lagi sekadar bertahan hidup; mereka kini bertarung seperti satu jiwa yang tak terpisahkan.',
+    'Malam kesembilan berlalu. Malam terpanjang telah dilewati — besok, Dark Pekat turun sendiri.',
   ],
   next: 'PRESS ENTER OR CLICK FOR THE NEXT NIGHT',
+  // ANDROID BUILD ONLY (v1.4.5) — prologue, shown once before the first run,
+  // in two pages: the world of Luminaria, then Dark Pekat's tragedy.
+  prologueTitle: 'PADANG RUMPUT LUMINARIA',
+  prologue: [
+    [
+      'Di padang rumput Luminaria, tanah tak pernah disinari matahari secara langsung. Kehidupan dipertahankan oleh Pohon Bulan yang meneteskan embun energi dan menerbangkan serpihan cahaya bintang.',
+      'Nenek moyang mendirikan 4 Lampion Purba: Barat (Lentera Harapan), Tengah-Kiri (Lentera Keberanian), Tengah-Kanan (Lentera Harmoni), Timur (Lentera Fajar). Jika keempatnya padam dalam satu malam, padang rumput membeku dalam kegelapan abadi.',
+    ],
+    [
+      'Ratusan siklus lalu, Dark Pekat adalah Kumbang Zirah Pengembara penjaga perbatasan. Saat badai bayangan purba melanda, ia merasa ditinggalkan sendirian di kegelapan.',
+      'Rasa sakit dan kesepian itu membusuk, menarik Zat Kehampaan merasuki tubuhnya. Cangkangnya menjadi obsidian hitam, sayapnya robek menjadi kabut asap ungu, dan hatinya diliputi satu obsesi: jika ia ditakdirkan hidup dalam gelap, seluruh dunia pun harus padam bersamanya.',
+      'Lumi dan Lulu tertangkap dan disekap dalam kurungan bayangan. Kini, tinggal Luma seorang diri yang harus menerjang kegelapan, menyalakan lampion satu per satu demi membebaskan keluarganya.',
+    ],
+  ],
+  prologueBegin: 'PRESS ENTER UNTUK MEMULAI',
+  prologueNext: 'KETUK UNTUK LANJUT',
+  // ANDROID BUILD ONLY (v1.4.5) — epilogue, shown once when the boss first falls.
+  epilogueTitle: 'FAJAR KEMENANGAN',
+  epilogue: [
+    'Ketika Lampion ke-4 menyala sempurna di Malam ke-10, keempat lampion memancarkan tiang pilar cahaya emas yang terhubung satu sama lain, membentuk jaring konstelasi raksasa yang mengurung Dark Pekat.',
+    'Dark Pekat: "Tidak... cahaya ini... mengapa terasa begitu... hangat...?" Zirah obsidian hitam pekat itu retak perlahan. Dari celah retakannya, bukan cairan racun yang keluar, melainkan butiran cahaya yang terperangkap selama ratusan tahun. Tubuh raksasanya memudar menjadi serpihan debu bintang yang terbang damai tertiup angin pagi.',
+    'Di ufuk timur, untuk pertama kalinya dalam sejarah Luminaria, Matahari Terbit. Cahaya keemasan menyapu seluruh padang rumput, menumbuhkan bunga-bunga bercahaya baru di tanah yang tadinya tandus.',
+    'Luma, Lumi, dan Lulu terbang melingkar bersama menuju langit fajar, menyambut era baru di mana malam tak lagi menjadi musuh, melainkan rumah yang penuh kehangatan.',
+  ],
 };
+
+// ANDROID BUILD ONLY (v1.4.5) — one-time story flags in localStorage.
+export const PROLOGUE_KEY = 'glowmoth.prologue.v1';
+export const EPILOGUE_KEY = 'glowmoth.epilogue.v1';
 
 // ANDROID BUILD ONLY (v1.4.4) — dawn cutscenes: short dialogue scenes that
 // play on the dawn screen after night 3 (Lumi freed) and night 6 (Lulu
@@ -159,26 +194,32 @@ export const CUTSCENES = {
   3: {
     title: 'LUMI BEBAS',
     beats: [
-      { who: 'lumi', text: 'Luma! Terima kasih… akhirnya aku bebas dari penjara Dark Pekat!' },
-      { who: 'lumi', text: 'Tapi Lulu masih di sana. Malam ke-6, kita selamatkan dia bersama-sama.' },
-      { who: 'luma', text: 'Kita berdua. Terbang bersamaku, Lumi!' },
+      { who: 'lumi', text: 'Luma...! Kamu benar-benar datang... Aku pikir aku akan terkikis habis oleh dinginnya kegelapan ini.' },
+      { who: 'luma', text: 'Aku tidak akan pernah membiarkanmu padam, Lumi. Tapi di mana Lulu?' },
+      { who: 'lumi', text: 'Dark Pekat menyeretnya ke lapisan stratosfer hitam. Lulu dikurung dalam es bayangan pekat... dia tidak bisa bertahan lebih dari tiga malam lagi!' },
+      { who: 'luma', text: 'Kalau begitu, kita tidak boleh buang waktu. Ayo kita terbang bersama!' },
+      { who: 'lumi', text: 'Lentera mint-ku memiliki resonansi magnetik. Aku akan membantumu menarik serpihan cahaya emas dari kejauhan agar kamu bisa fokus menghindari serangan bayangan!' },
     ],
   },
   6: {
     title: 'LULU BEBAS',
     beats: [
-      { who: 'lulu', text: 'Aku bebas! Terima kasih, Luma… dan Lumi.' },
-      { who: 'lumi', text: 'Sekarang kita bertiga. Dark Pekat tidak akan menang.' },
-      { who: 'luma', text: 'Malam ke-10, bos menunggu. Siapkan sayapmu — kita lawan bersama!' },
+      { who: 'lulu', text: 'Luma... Lumi... Maafkan aku, aku tidak cukup kuat melawan cakar raksasa itu...' },
+      { who: 'lumi', text: 'Jangan bicara lagi, Lulu. Kamu sudah aman sekarang bersama kami.' },
+      { who: 'lulu', text: 'Kalian berdua datang begitu jauh menembus badai panah itu demi aku...' },
+      { who: 'luma', text: 'Padang rumput ini butuh kita bertiga, Lulu. Dan aku tidak akan menjadi Luma yang utuh tanpa kalian berdua.' },
+      { who: 'lulu', text: 'Kalau begitu, dengarkan aku: Dark Pekat telah mengumpulkan seluruh pasukannya. Dia akan turun sendiri ke padang rumput ini pada Malam ke-10. Aku telah mempelajari sifat energinya — lenteraku bisa menciptakan perisai untuk melindungi kita dari serangan fatalnya!' },
     ],
   },
   // Boss intro: plays when a boss night (10, 20, ...) starts, before the fight.
   boss: {
     title: 'DARK PEKAT',
     beats: [
-      { who: 'darkPekat', text: 'Kunang-kunang kecil… berani menantangku? Aku akan memadamkan cahayamu!' },
-      { who: 'luma', text: 'Kami bertiga sekarang. Cahaya kami tidak akan padam!' },
-      { who: 'lulu', text: 'Nyalakan lampionnya! Setiap cahaya yang menyala melukai Dark Pekat!' },
+      { who: 'darkPekat', text: 'Lentera-lentera kecil yang menyedihkan... Kalian pikir reuni kecil kalian ini punya arti di hadapan kehampaan semesta?' },
+      { who: 'luma', text: 'Kamu takut pada cahaya kami, Dark Pekat! Karena dalam cahaya, kamu melihat betapa kosongnya dirimu!' },
+      { who: 'darkPekat', text: 'KOSONG?! Aku adalah malam itu sendiri! Aku akan menginjak-injak lampion kalian dan memastikan fajar tak akan pernah terbit lagi di tanah ini!' },
+      { who: 'lulu', text: 'Pasang perisai! Dia menyerang!' },
+      { who: 'lumi', text: 'Luma, kumpulkan serpihan motes dan nyalakan lampionnya! Setiap lampion yang berkobar akan membakar zirah hitamnya!' },
     ],
   },
 };
