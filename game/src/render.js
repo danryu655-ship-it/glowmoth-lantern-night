@@ -810,12 +810,12 @@ export function createRenderer(canvas) {
     panel.addColorStop(1, 'rgba(7, 14, 27, 0.2)');
     ctx.fillStyle = panel;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(143, 240, 208, 0.1)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(74, 20, 140, 0.55)';
+    ctx.lineWidth = 1.2;
     ctx.stroke();
 
     label(ctx, 'SCORE', 44, 38, { font: `600 12px ${MONO_FONT}`, color: C.textDim, spacing: 3 });
-    label(ctx, state.score.toLocaleString('en-US'), 44, 74, { font: `700 36px ${MONO_FONT}`, color: C.amber, glow: 10, glowColor: 'rgba(255, 213, 79, 0.45)' });
+    label(ctx, state.score.toLocaleString('en-US'), 44, 70, { font: `700 24px ${MONO_FONT}`, color: C.amber, glow: 10, glowColor: 'rgba(255, 213, 79, 0.45)' });
     // Combo lives at the bottom centre, fading in while the chain holds and out when it breaks.
     if (state.combo > 1) {
       const fade = clamp(state.comboTimer / 0.5, 0, 1);
