@@ -1158,8 +1158,24 @@ export function createRenderer(canvas) {
       ctx.restore();
     }
 
+    // ANDROID BUILD ONLY (v1.6.0) — the top-centre HUD sits on the
+    // parallax moon (layer 1, cx 640 cy 220 r 135): pale yellow on pale
+    // yellow, the lantern count unreadable. A dark pill behind the whole
+    // cluster keeps it legible over any background.
+    ctx.save();
+    roundedRect(ctx, W / 2 - 150, 26, 300, 72, 16);
+    ctx.fillStyle = 'rgba(7, 14, 27, 0.55)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 213, 79, 0.25)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.restore();
     const bossNight = state.night % BOSS.every === 0;
-    label(ctx, bossNight ? `NIGHT ${state.night} — BOSS` : `NIGHT ${state.night} / ${RUN.nightsToWin}`, W / 2, 40, { font: `700 15px ${MONO_FONT}`, color: bossNight ? C.coral : C.mint, align: 'center', spacing: 3 });
+    // ANDROID BUILD ONLY (v1.6.0) — past the original 3-night goal the
+    // counter reads "NIGHT 5 / 3", which looks broken in endless mode.
+    const nightLabel = bossNight ? `NIGHT ${state.night} — BOSS`
+      : state.night <= RUN.nightsToWin ? `NIGHT ${state.night} / ${RUN.nightsToWin}` : `NIGHT ${state.night}`;
+    label(ctx, nightLabel, W / 2, 40, { font: `700 15px ${MONO_FONT}`, color: bossNight ? C.coral : C.mint, align: 'center', spacing: 3 });
     for (let index = 0; index < LANTERN.count; index += 1) {
       const x = W / 2 - (LANTERN.count - 1) * 24 + index * 48;
       const lit = state.lanterns[index]?.lit ?? false;
@@ -1629,7 +1645,19 @@ export function createRenderer(canvas) {
         overlay(0.58);
         label(ctx, scene.title, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
       }
-      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 690, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      // ANDROID BUILD ONLY (v1.6.0) — the hint sat exactly on the card's
+      // dialogue-box edge (y 690) and read as cut off. It now rides inside
+      // the box's lower padding (dialogue text ends at 638, box ends at
+      // 690) on a dark chip so it reads over any card.
+      ctx.save();
+      roundedRect(ctx, W / 2 - 120, 656, 240, 28, 14);
+      ctx.fillStyle = 'rgba(7, 14, 27, 0.6)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(247, 241, 220, 0.25)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 672, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
       return;
     }
     const speakers = {
@@ -1802,7 +1830,17 @@ export function createRenderer(canvas) {
         overlay(0.58);
         label(ctx, STRINGS.epilogueTitle, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
       }
-      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 690, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      // ANDROID BUILD ONLY (v1.6.0) — same chip as the cutscene cards:
+      // the hint sat on the dialogue-box edge (y 690) and read as cut off.
+      ctx.save();
+      roundedRect(ctx, W / 2 - 120, 656, 240, 28, 14);
+      ctx.fillStyle = 'rgba(7, 14, 27, 0.6)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(247, 241, 220, 0.25)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 672, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
       return;
     }
     const pages = [STRINGS.epilogue.slice(0, 2), STRINGS.epilogue.slice(2)];
