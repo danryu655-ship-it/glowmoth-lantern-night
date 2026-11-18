@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <defs>
+    <!-- Background Radiant Void Aura -->
+    <radialGradient id="voidAuraBright" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9333ea" stop-opacity="0.75" />
+      <stop offset="45%" stop-color="#581c87" stop-opacity="0.4" />
+      <stop offset="80%" stop-color="#2e1065" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#090514" stop-opacity="0" />
+    </radialGradient>
+    <!-- Rich Amethyst Chitin Armor (High Contrast) -->
+    <linearGradient id="chitinAmethyst" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="30%" stop-color="#6b21a8" />
+      <stop offset="70%" stop-color="#3b0764" />
+      <stop offset="100%" stop-color="#1e0b38" />
+    </linearGradient>
+    <!-- Claw & Plate Highlight -->
+    <linearGradient id="plateHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e879f9" />
+      <stop offset="50%" stop-color="#9333ea" />
+      <stop offset="100%" stop-color="#4c1d95" />
+    </linearGradient>
+    <filter id="neonPop" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Bright Ambient Glow Circle -->
+  <circle cx="160" cy="160" r="145" fill="url(#voidAuraBright)" />
+
+  <!-- Scorpion Tail Arcing Over (Detailed & High Contrast Segments) -->
+  <g stroke="#f0abfc" stroke-width="2">
+    <!-- Tail Segment 1 -->
+    <ellipse cx="160" cy="205" rx="22" ry="15" fill="url(#chitinAmethyst)" />
+    <!-- Tail Segment 2 -->
+    <ellipse cx="160" cy="178" rx="20" ry="14" fill="url(#chitinAmethyst)" />
+    <!-- Tail Segment 3 -->
+    <ellipse cx="166" cy="150" rx="18" ry="13" fill="url(#chitinAmethyst)" />
+    <!-- Tail Segment 4 -->
+    <ellipse cx="178" cy="122" rx="17" ry="12" fill="url(#chitinAmethyst)" />
+    <!-- Tail Segment 5 -->
+    <ellipse cx="195" cy="94" rx="16" ry="11" fill="url(#chitinAmethyst)" />
+    <!-- Tail Segment 6 (Arcing Forward) -->
+    <ellipse cx="182" cy="68" rx="17" ry="12" fill="url(#plateHighlight)" />
+  </g>
+
+  <!-- Glowing Stinger Bulb (Bohlam Sengat Berpendar Terang) -->
+  <g filter="url(#neonPop)">
+    <path d="M 172 52 Q 148 36 136 58 Q 148 80 172 68 Z" fill="#ec4899" stroke="#fdf2f8" stroke-width="2.5" />
+    <!-- Core Venom Light -->
+    <circle cx="152" cy="58" r="8" fill="#ffffff" />
+    <!-- Curved Deadly Stinger Blade -->
+    <path d="M 136 58 Q 112 60 102 78 Q 124 75 134 68 Z" fill="#ffffff" stroke="#f472b6" stroke-width="2" />
+    <!-- Acid Venom Dripping Sparks -->
+    <circle cx="100" cy="85" r="4" fill="#f472b6" />
+    <circle cx="96" cy="102" r="2.5" fill="#e879f9" />
+  </g>
+
+  <!-- Main Body Carapace (Clear Visible Segmented Plates) -->
+  <!-- Back Segment 1 -->
+  <path d="M 120 185 Q 160 168 200 185 L 195 210 Q 160 198 125 210 Z" fill="url(#chitinAmethyst)" stroke="#e879f9" stroke-width="2.5" />
+  <!-- Back Segment 2 -->
+  <path d="M 125 210 Q 160 198 195 210 L 190 234 Q 160 224 130 234 Z" fill="url(#chitinAmethyst)" stroke="#c084fc" stroke-width="2.5" />
+  <!-- Thorax Core Shield -->
+  <polygon points="160,132 198,158 188,185 132,185 122,158" fill="url(#plateHighlight)" stroke="#fdf4ff" stroke-width="2.5" />
+
+  <!-- Glowing Abyssal Rune on Chest -->
+  <g stroke="#ffffff" stroke-width="2" fill="none" filter="url(#neonPop)">
+    <polygon points="160,146 172,162 160,172 148,162" />
+    <line x1="160" y1="140" x2="160" y2="178" />
+  </g>
+
+  <!-- 4 Bright Glowing Eyes (Bright Crimson-Magenta) -->
+  <g fill="#ff0055" filter="url(#neonPop)">
+    <ellipse cx="146" cy="152" rx="6" ry="8" transform="rotate(-15 146 152)" />
+    <ellipse cx="174" cy="152" rx="6" ry="8" transform="rotate(15 174 152)" />
+    <circle cx="137" cy="160" r="3.5" fill="#f43f5e" />
+    <circle cx="183" cy="160" r="3.5" fill="#f43f5e" />
+  </g>
+  <circle cx="145" cy="150" r="2" fill="#ffffff" />
+  <circle cx="173" cy="150" r="2" fill="#ffffff" />
+
+  <!-- Left Massive Claw Arm (Detailed & High Contrast) -->
+  <g stroke="#9333ea" stroke-width="8" stroke-linecap="round" fill="none">
+    <path d="M 128 160 Q 85 148 60 170" />
+  </g>
+  <g stroke="#f0abfc" stroke-width="2">
+    <!-- Pincer Palm Base -->
+    <ellipse cx="60" cy="170" rx="20" ry="15" transform="rotate(-20 60 170)" fill="url(#plateHighlight)" />
+    <!-- Upper Claw with Serrated Teeth -->
+    <path d="M 46 164 Q 26 142 34 118 Q 54 135 56 156 Z" fill="url(#chitinAmethyst)" />
+    <!-- Lower Claw with Serrated Teeth -->
+    <path d="M 54 178 Q 34 200 18 190 Q 38 172 50 174 Z" fill="url(#chitinAmethyst)" />
+  </g>
+  <!-- Claw Glowing Edge -->
+  <path d="M 34 118 Q 50 138 52 158" stroke="#ffffff" stroke-width="2" fill="none" filter="url(#neonPop)" />
+  <path d="M 18 190 Q 36 174 48 174" stroke="#ffffff" stroke-width="2" fill="none" filter="url(#neonPop)" />
+
+  <!-- Right Massive Claw Arm (Detailed & High Contrast) -->
+  <g stroke="#9333ea" stroke-width="8" stroke-linecap="round" fill="none">
+    <path d="M 192 160 Q 235 148 260 170" />
+  </g>
+  <g stroke="#f0abfc" stroke-width="2">
+    <!-- Pincer Palm Base -->
+    <ellipse cx="260" cy="170" rx="20" ry="15" transform="rotate(20 260 170)" fill="url(#plateHighlight)" />
+    <!-- Upper Claw with Serrated Teeth -->
+    <path d="M 274 164 Q 294 142 286 118 Q 266 135 264 156 Z" fill="url(#chitinAmethyst)" />
+    <!-- Lower Claw with Serrated Teeth -->
+    <path d="M 266 178 Q 286 200 302 190 Q 282 172 270 174 Z" fill="url(#chitinAmethyst)" />
+  </g>
+  <!-- Claw Glowing Edge -->
+  <path d="M 286 118 Q 270 138 268 158" stroke="#ffffff" stroke-width="2" fill="none" filter="url(#neonPop)" />
+  <path d="M 302 190 Q 284 174 272 174" stroke="#ffffff" stroke-width="2" fill="none" filter="url(#neonPop)" />
+
+  <!-- 4 Walking Legs (Clearly Defined with Violet Armor Joint Highlights) -->
+  <g stroke="#a855f7" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 122 188 Q 85 208 68 245" />
+    <path d="M 125 210 Q 90 234 78 272" />
+    <path d="M 198 188 Q 235 208 252 245" />
+    <path d="M 195 210 Q 230 234 242 272" />
+  </g>
+  <!-- Leg Tip Spikes (Sharp Violet Tips) -->
+  <circle cx="68" cy="245" r="3.5" fill="#f0abfc" />
+  <circle cx="78" cy="272" r="3.5" fill="#f0abfc" />
+  <circle cx="252" cy="245" r="3.5" fill="#f0abfc" />
+  <circle cx="242" cy="272" r="3.5" fill="#f0abfc" />
+</svg>

@@ -29,8 +29,9 @@ export function updateCompanion(companion, targetX, targetY, dt) {
   companion.flap += dt * 14;
 }
 
-export function createBoss() {
+export function createBoss(kind = 'pekat') {
   return {
+    kind,
     x: FIELD.width / 2,
     y: 168,
     r: BOSS.radius,
@@ -146,6 +147,53 @@ export function spawnDart(state, rand) {
     angle,
     targetAngle: angle,
   });
+}
+
+// ANDROID BUILD ONLY (v1.6.0) — the Void Scorpion: a ground crawler that
+// walks the meadow floor toward the moth and lunges when it gets close.
+export function spawnScorpion(state, rand) {
+  const fromLeft = rand.next() < 0.5;
+  state.hazards.push({
+    kind: 'scorpion',
+    x: fromLeft ? -50 : FIELD.width + 50,
+    y: FIELD.groundY - 24,
+    vx: 0,
+    vy: 0,
+    r: HAZARD.scorpion.radius,
+    speed: HAZARD.scorpion.speed + state.night * HAZARD.scorpion.speedPerNight,
+    phase: rand.angle(),
+    age: 0,
+    stun: 0,
+    mode: 'hunt',
+    lungeTimer: 0,
+    lungeStart: 0,
+    angle: 0,
+  });
+}
+
+export function updateScorpion(hazard, player, dt) {
+  hazard.age += dt;
+  hazard.lungeTimer = Math.max(0, hazard.lungeTimer - dt);
+  if (hazard.stun > 0) {
+    hazard.stun -= dt;
+    hazard.vx *= Math.max(0, 1 - 3 * dt);
+  } else if (hazard.mode === 'lunge') {
+    hazard.x += hazard.vx * dt;
+    if (hazard.age - hazard.lungeStart > 0.45) hazard.mode = 'hunt';
+  } else {
+    const distance = Math.hypot(player.x - hazard.x, player.y - hazard.y);
+    const direction = player.x >= hazard.x ? 1 : -1;
+    if (distance < HAZARD.scorpion.lungeRange && hazard.lungeTimer <= 0) {
+      hazard.mode = 'lunge';
+      hazard.lungeStart = hazard.age;
+      hazard.lungeTimer = HAZARD.scorpion.lungeCooldown;
+      hazard.vx = direction * HAZARD.scorpion.lungeSpeed;
+    } else {
+      hazard.vx = direction * hazard.speed;
+    }
+    hazard.x += hazard.vx * dt;
+  }
+  hazard.y = FIELD.groundY - 24;
 }
 
 export function updateMote(mote, dt) {

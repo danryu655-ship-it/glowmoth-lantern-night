@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <!-- Deep Cosmic Midnight Sky -->
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050814" />
+      <stop offset="35%" stop-color="#0a1428" />
+      <stop offset="70%" stop-color="#123050" />
+      <stop offset="100%" stop-color="#071a20" />
+    </linearGradient>
+    <!-- Moon Glow -->
+    <radialGradient id="moonGlowAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.35" />
+      <stop offset="45%" stop-color="#facc15" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#ca8a04" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="moonBody" cx="42%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="30%" stop-color="#fef9c3" />
+      <stop offset="75%" stop-color="#fde68a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </radialGradient>
+  </defs>
+
+  <!-- Sky Base -->
+  <rect width="1280" height="720" fill="url(#skyGrad)" />
+
+  <!-- Stars Layer -->
+  <g fill="#dfeaff">
+    <circle cx="80" cy="60" r="1.5" opacity="0.8" />
+    <circle cx="160" cy="140" r="1.8" opacity="0.6" />
+    <circle cx="240" cy="75" r="2.2" opacity="0.85" />
+    <circle cx="360" cy="120" r="1.2" opacity="0.5" />
+    <circle cx="480" cy="65" r="2" opacity="0.75" />
+    <circle cx="590" cy="145" r="1.5" opacity="0.6" />
+    <circle cx="720" cy="80" r="2.2" opacity="0.9" />
+    <circle cx="840" cy="130" r="1.8" opacity="0.7" />
+    <circle cx="950" cy="60" r="2" opacity="0.85" />
+    <circle cx="1060" cy="115" r="1.2" opacity="0.5" />
+    <circle cx="1180" cy="70" r="2.2" opacity="0.8" />
+    <circle cx="1240" cy="150" r="1.5" opacity="0.65" />
+    <circle cx="110" cy="220" r="1.8" opacity="0.7" />
+    <circle cx="310" cy="240" r="1.5" opacity="0.6" />
+    <circle cx="920" cy="230" r="2" opacity="0.75" />
+    <circle cx="1130" cy="250" r="1.8" opacity="0.8" />
+  </g>
+
+  <!-- Giant Glowing Moon -->
+  <circle cx="640" cy="220" r="220" fill="url(#moonGlowAura)" />
+  <circle cx="640" cy="220" r="135" fill="url(#moonBody)" />
+  <circle cx="590" cy="180" r="24" fill="#fef08a" opacity="0.3" />
+  <circle cx="680" cy="235" r="34" fill="#fef08a" opacity="0.25" />
+  <circle cx="625" cy="265" r="18" fill="#fef08a" opacity="0.3" />
+
+  <!-- Subtle Cyan Nebula Dust Bands -->
+  <path d="M 0 160 Q 350 220 700 140 Q 1050 60 1280 120" stroke="#06b6d4" stroke-width="60" stroke-opacity="0.04" fill="none" />
+  <path d="M 0 280 Q 400 200 800 260 Q 1100 320 1280 250" stroke="#8b5cf6" stroke-width="70" stroke-opacity="0.05" fill="none" />
+</svg>

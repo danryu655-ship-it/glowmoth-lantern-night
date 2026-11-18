@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <linearGradient id="nightSky3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050a16" />
+      <stop offset="60%" stop-color="#0a1a2e" />
+      <stop offset="100%" stop-color="#04121a" />
+    </linearGradient>
+    <!-- Mint Lumi Radiance -->
+    <radialGradient id="mintBurst" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="35%" stop-color="#a7f3d0" />
+      <stop offset="70%" stop-color="#34d399" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#065f46" stop-opacity="0" />
+    </radialGradient>
+    <!-- Gold Luma Radiance -->
+    <radialGradient id="goldBurst" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="35%" stop-color="#fef08a" />
+      <stop offset="70%" stop-color="#eab308" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#854d0e" stop-opacity="0" />
+    </radialGradient>
+    <filter id="sceneGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#nightSky3)" />
+
+  <!-- Stars -->
+  <g fill="#dfeaff" opacity="0.65">
+    <circle cx="180" cy="90" r="2" />
+    <circle cx="340" cy="140" r="1.5" />
+    <circle cx="890" cy="110" r="2.2" />
+    <circle cx="1120" cy="80" r="1.8" />
+    <circle cx="950" cy="220" r="1.5" />
+  </g>
+
+  <!-- Ground Silhouette with Glowing Ferns -->
+  <path d="M 0 580 Q 400 550 800 570 Q 1100 545 1280 575 L 1280 720 L 0 720 Z" fill="#040e14" />
+
+  <!-- The 4 Lit Lanterns Beaming Upwards -->
+  <g opacity="0.6">
+    <line x1="200" y1="560" x2="200" y2="100" stroke="#fef08a" stroke-width="4" stroke-opacity="0.3" filter="url(#sceneGlow)" />
+    <line x1="480" y1="570" x2="480" y2="100" stroke="#fef08a" stroke-width="4" stroke-opacity="0.3" filter="url(#sceneGlow)" />
+    <line x1="800" y1="570" x2="800" y2="100" stroke="#fef08a" stroke-width="4" stroke-opacity="0.3" filter="url(#sceneGlow)" />
+    <line x1="1080" y1="560" x2="1080" y2="100" stroke="#fef08a" stroke-width="4" stroke-opacity="0.3" filter="url(#sceneGlow)" />
+  </g>
+
+  <!-- Central Dramatic Clash: Shattered Shadow Cage -->
+  <!-- Shadow Tendrils Dissolving -->
+  <g stroke="#581c87" stroke-width="5" fill="none" opacity="0.75" filter="url(#sceneGlow)">
+    <path d="M 680 240 Q 640 180 590 190" />
+    <path d="M 720 290 Q 770 230 810 260" />
+    <path d="M 690 380 Q 740 430 790 410" />
+    <path d="M 610 370 Q 560 410 520 380" />
+  </g>
+  <!-- Shattered Obsidian Cage Bars Flying Apart -->
+  <g fill="#180b29" stroke="#c084fc" stroke-width="2">
+    <polygon points="630,220 645,210 650,240 635,250" />
+    <polygon points="760,250 780,245 775,275 755,270" />
+    <polygon points="730,390 745,410 725,420 715,400" />
+    <polygon points="580,360 595,345 605,370 590,380" />
+  </g>
+
+  <!-- LUMI FREED: Emerging from Cage (Center Right) -->
+  <g transform="translate(710, 310)">
+    <!-- Mint Radiant Aura -->
+    <circle cx="0" cy="0" r="140" fill="url(#mintBurst)" filter="url(#sceneGlow)" />
+
+    <!-- Translucent Mint Wings Fluttering -->
+    <ellipse cx="-45" cy="-25" rx="55" ry="24" transform="rotate(-30 -45 -25)" fill="rgba(209, 250, 229, 0.85)" stroke="#6ee7b7" stroke-width="2.5" />
+    <ellipse cx="45" cy="-25" rx="55" ry="24" transform="rotate(30 45 -25)" fill="rgba(209, 250, 229, 0.85)" stroke="#6ee7b7" stroke-width="2.5" />
+
+    <!-- Lumi Glowing Mint Lantern Abdomen -->
+    <ellipse cx="0" cy="38" rx="30" ry="25" fill="#a7f3d0" />
+    <circle cx="0" cy="38" r="14" fill="#ffffff" />
+
+    <!-- Cute Relieved Head & Body -->
+    <ellipse cx="0" cy="-18" rx="28" ry="25" fill="#8ff0d0" stroke="#047857" stroke-width="2.5" />
+    <!-- Happy Tearful Relief Eyes -->
+    <ellipse cx="-10" cy="-20" rx="9" ry="12" fill="#064e3b" />
+    <circle cx="-12" cy="-23" r="4" fill="#ffffff" />
+    <ellipse cx="10" cy="-20" rx="9" ry="12" fill="#064e3b" />
+    <circle cx="8" cy="-23" r="4" fill="#ffffff" />
+    <path d="M -6 -8 Q 0 -2 6 -8" stroke="#047857" stroke-width="2.5" fill="none" stroke-linecap="round" />
+  </g>
+
+  <!-- LUMA: Flying In to Rescue (Center Left) -->
+  <g transform="translate(480, 290)">
+    <!-- Golden Aura -->
+    <circle cx="0" cy="0" r="150" fill="url(#goldBurst)" filter="url(#sceneGlow)" />
+
+    <!-- Gold Wings -->
+    <ellipse cx="-45" cy="-25" rx="55" ry="24" transform="rotate(-35 -45 -25)" fill="rgba(254, 240, 138, 0.85)" stroke="#facc15" stroke-width="2.5" />
+    <ellipse cx="45" cy="-25" rx="55" ry="24" transform="rotate(25 45 -25)" fill="rgba(254, 240, 138, 0.85)" stroke="#facc15" stroke-width="2.5" />
+
+    <!-- Abdomen Flare -->
+    <ellipse cx="0" cy="38" rx="32" ry="26" fill="#fde047" />
+    <circle cx="0" cy="38" r="15" fill="#ffffff" />
+
+    <!-- Head & Cheerful Smile -->
+    <ellipse cx="0" cy="-18" rx="28" ry="25" fill="#86efac" stroke="#166534" stroke-width="2.5" />
+    <ellipse cx="-10" cy="-20" rx="10" ry="13" fill="#0f172a" />
+    <circle cx="-13" cy="-23" r="4" fill="#ffffff" />
+    <ellipse cx="10" cy="-20" rx="10" ry="13" fill="#0f172a" />
+    <circle cx="7" cy="-23" r="4" fill="#ffffff" />
+    <path d="M -6 -8 Q 0 -1 6 -8" stroke="#166534" stroke-width="2.5" fill="none" stroke-linecap="round" />
+  </g>
+
+  <!-- Floating Sparkles Connecting the Two Friends -->
+  <g fill="#ffffff" filter="url(#sceneGlow)">
+    <circle cx="580" cy="270" r="4" />
+    <circle cx="610" cy="320" r="5" />
+    <circle cx="625" cy="250" r="3.5" />
+    <circle cx="560" cy="340" r="3.5" />
+  </g>
+
+  <!-- Cutscene Header Text Card (Top) -->
+  <g text-anchor="middle">
+    <rect x="360" y="35" width="560" height="52" rx="26" fill="rgba(15, 23, 42, 0.85)" stroke="#34d399" stroke-width="2" />
+    <text x="640" y="67" font-family="'Cinzel', serif" font-weight="900" font-size="22" fill="#a7f3d0" letter-spacing="4">
+      MALAM KE-3 • PEMBEBASAN LUMI
+    </text>
+  </g>
+
+  <!-- Dialogue Box Overlay (Bottom) -->
+  <g>
+    <rect x="140" y="575" width="1000" height="115" rx="22" fill="rgba(10, 15, 29, 0.93)" stroke="#6ee7b7" stroke-width="2.5" />
+    <text x="180" y="608" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="16" fill="#a7f3d0" letter-spacing="1">
+      LUMI:
+    </text>
+    <text x="180" y="638" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="15" fill="#f1f5f9">
+      <tspan x="180" dy="0">"Luma! Terima kasih… akhirnya aku bebas dari penjara Dark Pekat!</tspan>
+      <tspan x="180" dy="25">Sayap mint-ku siap membantumu menarik serpihan motes dari kejauhan!"</tspan>
+    </text>
+  </g>
+</svg>

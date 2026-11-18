@@ -11,6 +11,9 @@ export const BEST_KEY = 'glowmoth.best.v1';
 // ANDROID BUILD ONLY (v1.5.0) — earned badges for the Skill screen.
 export const BADGES_KEY = 'glowmoth.badges.v1';
 
+// ANDROID BUILD ONLY (v1.6.0) — the moth's skin, picked on the title screen.
+export const SKIN_KEY = 'glowmoth.skin.v1';
+
 export const MOTH = {
   radius: 15,
   accel: 2450,
@@ -59,6 +62,9 @@ export const HAZARD = {
   max: 9,
   shade: { radius: 21, speed: 62, speedPerNight: 15, steer: 0.75 },
   dart: { radius: 11, speed: 540, speedPerNight: 55, aimTime: 0.9, telegraph: 1.05 },
+  // ANDROID BUILD ONLY (v1.6.0) — the Void Scorpion: a ground crawler that
+  // lunges when close. Flare only stuns it — it is too heavy to push.
+  scorpion: { radius: 22, speed: 68, speedPerNight: 10, lungeRange: 170, lungeSpeed: 330, lungeCooldown: 3 },
   spawnGap: 3.1,
   gapPerNight: 0.42,
   minGap: 1.05,
@@ -85,6 +91,43 @@ export const SHIELD = {
 // (tap / Space), the rest run on their own.
 export const SKILL_BUTTON = { x: 1120, y: 24, w: 132, h: 40 };
 export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
+
+// ANDROID BUILD ONLY (v1.6.0) — moth skins, picked on the title screen.
+// The portraits are the user's own SVGs (Golden Sun, Cyber Neon); the
+// default skin uses the Luma portrait. The moth in flight is still drawn
+// procedurally — the skin only swaps its colours (see SKIN_PALETTES).
+export const SKIN_BUTTON = { x: 976, y: 24, w: 132, h: 40 };
+export const SKIN_CARDS = [
+  { id: 'luma', x: 150, y: 150, w: 340, h: 440 },
+  { id: 'golden', x: 470, y: 150, w: 340, h: 440 },
+  { id: 'cyber', x: 790, y: 150, w: 340, h: 440 },
+];
+export const SKINS = [
+  { id: 'luma', portrait: 'luma', name: 'LUMA', tag: 'KLASIK', color: '#ffd54f', desc: 'Luma seperti biasa — emas hangat padang rumput.' },
+  { id: 'golden', portrait: 'skinGolden', name: 'GOLDEN SUN', tag: 'MALAM 1', color: '#f59e0b', desc: 'Sayap emas terang dengan halo matahari.' },
+  { id: 'cyber', portrait: 'skinCyber', name: 'CYBER NEON', tag: 'MALAM 1', color: '#22d3ee', desc: 'Neon sian & pink — Luma dari kota masa depan.' },
+];
+export const SKIN_PALETTES = {
+  luma: null, // the default gold/cream moth, as drawn since v1.0.0.
+  golden: {
+    aura: ['rgba(255, 214, 64, 0.5)', 'rgba(255, 190, 80, 0.2)', 'rgba(245, 158, 11, 0)'],
+    upper: ['rgba(255, 247, 214, 0.95)', 'rgba(255, 213, 79, 0.85)', 'rgba(245, 158, 11, 0.25)'],
+    lower: ['rgba(255, 236, 180, 0.85)', 'rgba(255, 180, 60, 0.2)'],
+    body: ['#fffbe9', '#ffd54f', '#b45309'],
+    head: '#fff3c9',
+    wingStroke: 'rgba(255, 240, 190, 0.5)',
+    antenna: 'rgba(255, 240, 190, 0.8)',
+  },
+  cyber: {
+    aura: ['rgba(34, 211, 238, 0.45)', 'rgba(236, 72, 153, 0.18)', 'rgba(34, 211, 238, 0)'],
+    upper: ['rgba(165, 243, 252, 0.92)', 'rgba(34, 211, 238, 0.75)', 'rgba(236, 72, 153, 0.3)'],
+    lower: ['rgba(34, 211, 238, 0.72)', 'rgba(236, 72, 153, 0.2)'],
+    body: ['#e0e7ff', '#818cf8', '#1e1b2e'],
+    head: '#f0abfc',
+    wingStroke: 'rgba(165, 243, 252, 0.5)',
+    antenna: 'rgba(165, 243, 252, 0.8)',
+  },
+};
 export const SKILL_GUIDE = [
   {
     id: 'flare', icon: 'icon-flare.svg', portrait: 'skillFlare', letter: 'F', name: 'FLARE BURST',
@@ -106,11 +149,22 @@ export const SKILL_GUIDE = [
     tag: 'POWER-UP', color: '#67e8f9',
     desc: 'Embun muncul tiap 17–25 detik: +50 poin & pulihkan 1 hati.',
   },
+  {
+    id: 'koko', icon: 'companion-koko.svg', portrait: 'companionKoko', letter: 'K', name: 'KOKO EMBER',
+    tag: 'PASIF  •  KOKO  —  MALAM 9', color: '#fb923c',
+    desc: 'Koko membakar 1 bayangan terdekat tiap 8 detik.',
+  },
+  {
+    id: 'zephyr', icon: 'companion-zephyr.svg', portrait: 'companionZephyr', letter: 'Z', name: 'ZEPHYR DRIFT',
+    tag: 'PASIF  •  ZEPHYR  —  MALAM 12', color: '#c084fc',
+    desc: 'Zephyr memperlambat semua bayangan & panah 25%.',
+  },
 ];
 export const BADGE_GUIDE = [
   { id: 'lumi', icon: 'badge-lumi.svg', portrait: 'badgeLumi', name: 'LUMI', night: 3, color: '#8ff0d0' },
   { id: 'lulu', icon: 'badge-lulu.svg', portrait: 'badgeLulu', name: 'LULU', night: 6, color: '#8ecbff' },
   { id: 'pekat', icon: 'badge-pekat.svg', portrait: 'badgePekat', name: 'DARK PEKAT', night: 10, color: '#a98bff' },
+  { id: 'ratu', icon: 'boss-ratu-laba-laba.svg', portrait: 'bossRatu', name: 'RATU LABA-LABA', night: 20, color: '#c084fc' },
 ];
 
 // ANDROID BUILD ONLY (v1.3.0) — companions and the boss.
@@ -118,6 +172,13 @@ export const COMPANION = {
   magnetRadius: 120,
   magnetPull: 150,
   trail: 54,
+  // ANDROID BUILD ONLY (v1.6.0) — Koko (night 9) and Zephyr (night 12)
+  // join later in endless mode, like Lumi (3) and Lulu (6).
+  kokoNight: 9,
+  zephyrNight: 12,
+  kokoScorchInterval: 8,
+  kokoScorchRange: 420,
+  zephyrSlow: 0.75,
 };
 
 export const BOSS = {
@@ -127,6 +188,19 @@ export const BOSS = {
   spawnBoost: 0.55,
   attackGap: 3.5,
 };
+
+// ANDROID BUILD ONLY (v1.6.0) — the second boss. Dark Pekat keeps nights
+// 10, 30, 50, ...; the Shadow Spider Queen takes nights 20, 40, 60, ...
+// The fight is the same (4 lanterns = defeat); only the face, the arena
+// and the name change.
+export const BOSS_KINDS = {
+  pekat: { name: 'DARK PEKAT', color: '#a98bff' },
+  ratu: { name: 'RATU LABA-LABA', color: '#c084fc' },
+};
+
+export function bossKind(night) {
+  return night % 20 === 0 ? 'ratu' : 'pekat';
+}
 
 export const PALETTE = {
   ink: '#0B0E14',
@@ -187,6 +261,11 @@ export const STRINGS = {
     'Malam ketujuh berakhir. Angin mendadak berhenti bertiup. Keheningan yang menakutkan menyelimuti padang rumput... tanda sang badai sesungguhnya segera tiba.',
     'Malam kedelapan bertahan. Tiga sahabat ini tidak lagi sekadar bertahan hidup; mereka kini bertarung seperti satu jiwa yang tak terpisahkan.',
     'Malam kesembilan berlalu. Malam terpanjang telah dilewati — besok, Dark Pekat turun sendiri.',
+    // Nights 10–12 are Rias's, in the same voice (the Kronik's dawn lines
+    // stop at night 9): the first boss falls, then the Queen's web closes in.
+    'Malam kesepuluh berlalu. Dark Pekat kalah! Keempat lampion memancarkan pilar cahaya yang mengurungnya, dan zirah obsidiannya retak perlahan.',
+    'Malam kesebelas berlalu. Fajar semakin dekat, tapi dari sarang obsidian yang gelap, terdengar suara kaki-kaki raksasa merayap mendekat.',
+    'Malam kedua belas berlalu. Zephyr bebas! Sayap kosmiknya membentang, memperlambat bayangan yang mengejar kalian.',
   ],
   next: 'PRESS ENTER OR CLICK FOR THE NEXT NIGHT',
   // ANDROID BUILD ONLY (v1.4.5) — prologue, shown once before the first run,

@@ -3,10 +3,10 @@
 // a bit set of events for main.js to turn into screens, sound and announcements.
 
 import {
-  BOSS, COMPANION, DEW, FIELD, FLARE, HAZARD, LANTERN, MOTE, MOTH, RUN, SHIELD,
+  BOSS, BOSS_KINDS, COMPANION, DEW, FIELD, FLARE, HAZARD, LANTERN, MOTE, MOTH, RUN, SHIELD, bossKind,
 } from './config.js';
 import {
-  createBoss, createCompanion, createMoth, resetLanterns, spawnBossDart, spawnDart, spawnDew, spawnMote, spawnShade, updateCompanion, updateDart, updateMote, updateShade,
+  createBoss, createCompanion, createMoth, resetLanterns, spawnBossDart, spawnDart, spawnDew, spawnMote, spawnScorpion, spawnShade, updateCompanion, updateDart, updateMote, updateScorpion, updateShade,
 } from './entities.js';
 import { burst, dust, flareRing, updateParticles } from './particles.js';
 import { createRandom } from './random.js';
@@ -57,6 +57,13 @@ export function createWorld(seed) {
     lulu: false,
     lumiPos: null,
     luluPos: null,
+    // ANDROID BUILD ONLY (v1.6.0) — Koko, Zephyr, and which boss fell last.
+    koko: false,
+    zephyr: false,
+    kokoPos: null,
+    zephyrPos: null,
+    kokoTimer: 0,
+    lastBossKind: null,
     boss: null,
     bossTimer: 0,
     bossBonus: 0,
@@ -108,6 +115,12 @@ export function createWorld(seed) {
     state.lulu = false;
     state.lumiPos = null;
     state.luluPos = null;
+    state.koko = false;
+    state.zephyr = false;
+    state.kokoPos = null;
+    state.zephyrPos = null;
+    state.kokoTimer = 0;
+    state.lastBossKind = null;
     state.boss = null;
     state.bossTimer = 0;
     state.bossBonus = 0;
@@ -142,7 +155,8 @@ export function createWorld(seed) {
     state.bossBonus = 0;
     state.beam = null;
     if (state.night % BOSS.every === 0) {
-      state.boss = createBoss();
+      state.boss = createBoss(bossKind(state.night));
+      state.lastBossKind = state.boss.kind;
       state.bossTimer = 2.5;
     } else {
       state.boss = null;
@@ -229,11 +243,26 @@ export function createWorld(seed) {
             x: state.player.x, y: state.player.y - 44, text: 'LULU BERGABUNG! +1 HATI', age: 0, life: 1.4, big: true,
           });
         }
+        // ANDROID BUILD ONLY (v1.6.0) — Koko (night 9) and Zephyr (night 12).
+        if (state.night === COMPANION.kokoNight && !state.koko) {
+          state.koko = true;
+          state.kokoPos = createCompanion(state.player.x - 40, state.player.y - 20, 'koko');
+          state.pops.push({
+            x: state.player.x, y: state.player.y - 44, text: 'KOKO BERGABUNG!', age: 0, life: 1.4, big: true,
+          });
+        }
+        if (state.night === COMPANION.zephyrNight && !state.zephyr) {
+          state.zephyr = true;
+          state.zephyrPos = createCompanion(state.player.x + 40, state.player.y - 20, 'zephyr');
+          state.pops.push({
+            x: state.player.x, y: state.player.y - 44, text: 'ZEPHYR BERGABUNG!', age: 0, life: 1.4, big: true,
+          });
+        }
         if (state.boss) {
           state.bossBonus = BOSS.bonus * (state.night / BOSS.every);
           state.score += state.bossBonus;
           state.pops.push({
-            x: state.boss.x, y: state.boss.y + 40, text: `DARK PEKAT KALAH! +${state.bossBonus}`, age: 0, life: 1.6, big: true,
+            x: state.boss.x, y: state.boss.y + 40, text: `${BOSS_KINDS[state.boss.kind].name} KALAH! +${state.bossBonus}`, age: 0, life: 1.6, big: true,
           });
           burst(state, rand, state.boss.x, state.boss.y, {
             count: 40,
@@ -355,6 +384,10 @@ export function createWorld(seed) {
           size: 2.6,
           gravity: 0,
         });
+      } else if (hazard.kind === 'scorpion') {
+        // ANDROID BUILD ONLY (v1.6.0) — the scorpion is too heavy to push;
+        // the flare only stuns it.
+        hazard.stun = FLARE.stun;
       } else {
         const nx = distance > 0 ? dx / distance : 1;
         const ny = distance > 0 ? dy / distance : 0;
@@ -398,6 +431,19 @@ export function createWorld(seed) {
         state.player.x + Math.cos(behind - 0.45) * COMPANION.trail,
         state.player.y + Math.sin(behind - 0.45) * COMPANION.trail, dt);
     }
+    // ANDROID BUILD ONLY (v1.6.0) — Koko and Zephyr trail further out.
+    if (state.koko && state.kokoPos) {
+      const behind = state.player.face + Math.PI;
+      updateCompanion(state.kokoPos,
+        state.player.x + Math.cos(behind + 0.9) * COMPANION.trail,
+        state.player.y + Math.sin(behind + 0.9) * COMPANION.trail, dt);
+    }
+    if (state.zephyr && state.zephyrPos) {
+      const behind = state.player.face + Math.PI;
+      updateCompanion(state.zephyrPos,
+        state.player.x + Math.cos(behind - 0.9) * COMPANION.trail,
+        state.player.y + Math.sin(behind - 0.9) * COMPANION.trail, dt);
+    }
     if (state.beam) {
       state.beam.age += dt;
       if (state.beam.age > 0.5) state.beam = null;
@@ -430,6 +476,32 @@ export function createWorld(seed) {
     }
     state.shieldPop = Math.max(0, state.shieldPop - dt);
 
+    // ANDROID BUILD ONLY (v1.6.0) — Koko's ember: the nearest shade within
+    // range burns away every 8 seconds.
+    if (state.koko) {
+      state.kokoTimer -= dt;
+      if (state.kokoTimer <= 0) {
+        state.kokoTimer = COMPANION.kokoScorchInterval;
+        let nearest = null;
+        let nearestDistance = COMPANION.kokoScorchRange;
+        for (const hazard of state.hazards) {
+          if (hazard.kind !== 'shade') continue;
+          const distance = Math.hypot(hazard.x - state.player.x, hazard.y - state.player.y);
+          if (distance < nearestDistance) {
+            nearest = hazard;
+            nearestDistance = distance;
+          }
+        }
+        if (nearest) {
+          nearest.dead = true;
+          burst(state, rand, nearest.x, nearest.y, {
+            count: 16, colors: ['#fb923c', '#fde047', '#ff6f8a'], speed: 220, life: 0.7, size: 3, gravity: 0,
+          });
+          state.pops.push({ x: nearest.x, y: nearest.y - 26, text: 'KOKO!', age: 0, life: 0.9 });
+        }
+      }
+    }
+
     for (const lantern of state.lanterns) {
       lantern.pulse = Math.max(0, lantern.pulse - dt * 1.4);
       lantern.glow += ((lantern.lit ? 1 : 0) - lantern.glow) * Math.min(1, dt * 3);
@@ -460,6 +532,7 @@ export function createWorld(seed) {
     state.hazardTimer -= dt;
     if (state.hazardTimer <= 0 && state.hazards.length < HAZARD.max) {
       if (state.night >= 2 && rand.next() < 0.35) spawnDart(state, rand);
+      else if (state.night >= 4 && rand.next() < 0.25) spawnScorpion(state, rand);
       else if (rand.next() < 0.46) spawnDart(state, rand);
       else spawnShade(state, rand);
       if (state.night >= 3 && rand.next() < 0.3 && state.hazards.length < HAZARD.max) spawnShade(state, rand);
@@ -513,10 +586,14 @@ export function createWorld(seed) {
       }
     }
 
+    // ANDROID BUILD ONLY (v1.6.0) — Zephyr's drift: every shadow and dart
+    // moves 25% slower while she flies with you.
+    const slow = state.zephyr ? COMPANION.zephyrSlow : 1;
     for (let index = state.hazards.length - 1; index >= 0; index -= 1) {
       const hazard = state.hazards[index];
-      if (hazard.kind === 'dart') updateDart(hazard, player, dt);
-      else updateShade(hazard, player, dt);
+      if (hazard.kind === 'dart') updateDart(hazard, player, dt * slow);
+      else if (hazard.kind === 'scorpion') updateScorpion(hazard, player, dt * slow);
+      else updateShade(hazard, player, dt * slow);
       if (hazard.dead || hazard.x < -110 || hazard.x > FIELD.width + 110 || hazard.y < -130 || hazard.y > FIELD.height + 130) {
         if (!hazard.dead) hazard.dead = true;
         if (hazard.age > 1.4) state.hazards.splice(index, 1);

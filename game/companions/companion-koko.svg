@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" width="280" height="280">
+  <defs>
+    <radialGradient id="fireAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdba74" stop-opacity="0.9" />
+      <stop offset="40%" stop-color="#f97316" stop-opacity="0.6" />
+      <stop offset="75%" stop-color="#c2410c" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#431407" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="kokoBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffedd5" />
+      <stop offset="45%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+    <filter id="flameGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <circle cx="140" cy="140" r="130" fill="url(#fireAura)" />
+
+  <!-- Fiery Fluttering Wings -->
+  <!-- Left Wing -->
+  <g filter="url(#flameGlow)">
+    <path d="M 120 120 C 60 70 30 100 50 140 C 70 170 110 145 120 120 Z" fill="rgba(254, 215, 170, 0.75)" stroke="#f97316" stroke-width="2.5" />
+    <path d="M 115 130 C 70 100 55 120 65 145 C 80 165 105 145 115 130 Z" fill="#fdba74" opacity="0.6" />
+  </g>
+  <!-- Right Wing -->
+  <g filter="url(#flameGlow)">
+    <path d="M 160 120 C 220 70 250 100 230 140 C 210 170 170 145 160 120 Z" fill="rgba(254, 215, 170, 0.75)" stroke="#f97316" stroke-width="2.5" />
+    <path d="M 165 130 C 210 100 225 120 215 145 C 200 165 175 145 165 130 Z" fill="#fdba74" opacity="0.6" />
+  </g>
+
+  <!-- Glowing Ember Abdomen (Perut Lentera Berapi Koko) -->
+  <g filter="url(#flameGlow)">
+    <ellipse cx="140" cy="195" rx="36" ry="30" fill="#f97316" />
+    <ellipse cx="140" cy="195" rx="24" ry="18" fill="#fef08a" />
+    <circle cx="140" cy="195" r="10" fill="#ffffff" />
+  </g>
+  <!-- Abdomen Shell Stripes -->
+  <path d="M 114 188 Q 140 202 166 188" stroke="#c2410c" stroke-width="3" fill="none" />
+  <path d="M 118 202 Q 140 216 162 202" stroke="#c2410c" stroke-width="3" fill="none" />
+
+  <!-- Thorax / Dada Imut -->
+  <ellipse cx="140" cy="148" rx="22" ry="20" fill="#7c2d12" stroke="#431407" stroke-width="3" />
+
+  <!-- Hands & Feet -->
+  <path d="M 125 152 Q 105 160 112 170" stroke="#431407" stroke-width="3" stroke-linecap="round" fill="none" />
+  <path d="M 155 152 Q 175 160 168 170" stroke="#431407" stroke-width="3" stroke-linecap="round" fill="none" />
+
+  <!-- Head (Kepala Oranye Menggemaskan) -->
+  <ellipse cx="140" cy="108" rx="32" ry="28" fill="url(#kokoBody)" stroke="#7c2d12" stroke-width="3" />
+
+  <!-- Flame Antennae (Antena Percikan Api) -->
+  <path d="M 128 84 Q 108 55 112 38 Q 124 45 124 64" fill="#f97316" stroke="#c2410c" stroke-width="2" />
+  <circle cx="112" cy="38" r="4" fill="#fef08a" filter="url(#flameGlow)" />
+  <path d="M 152 84 Q 172 55 168 38 Q 156 45 156 64" fill="#f97316" stroke="#c2410c" stroke-width="2" />
+  <circle cx="168" cy="38" r="4" fill="#fef08a" filter="url(#flameGlow)" />
+
+  <!-- Big Sparkly Eyes -->
+  <g>
+    <!-- Left Eye -->
+    <ellipse cx="127" cy="106" rx="11" ry="14" fill="#291206" />
+    <circle cx="124" cy="101" r="4.5" fill="#ffffff" />
+    <circle cx="130" cy="111" r="2" fill="#fed7aa" />
+
+    <!-- Right Eye -->
+    <ellipse cx="153" cy="106" rx="11" ry="14" fill="#291206" />
+    <circle cx="150" cy="101" r="4.5" fill="#ffffff" />
+    <circle cx="156" cy="111" r="2" fill="#fed7aa" />
+  </g>
+
+  <!-- Happy Smile & Blush -->
+  <path d="M 134 120 Q 140 128 146 120" stroke="#431407" stroke-width="2.5" fill="none" stroke-linecap="round" />
+  <circle cx="118" cy="118" r="4.5" fill="#f43f5e" opacity="0.6" />
+  <circle cx="162" cy="118" r="4.5" fill="#f43f5e" opacity="0.6" />
+</svg>

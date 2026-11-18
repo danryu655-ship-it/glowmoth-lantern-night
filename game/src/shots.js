@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|skills|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|skins|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 
 function placeMote(x, y, phase) {
@@ -66,6 +66,80 @@ export function stageShot(name, world, best) {
     state.hazards = [];
     state.particles = [];
     return { screen: SCREEN_SKILLS, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — the skin picker, Golden Sun selected.
+  if (name === 'skins') {
+    state.hazards = [];
+    state.particles = [];
+    return { screen: SCREEN_SKINS, best, skin: 'golden' };
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — night 20: the Spider Queen in her
+  // obsidian nest, two lanterns lit, Koko and Zephyr flying with Luma.
+  if (name === 'queen') {
+    state.night = 20;
+    state.score = 18400;
+    state.lives = 4;
+    state.progress = 2;
+    state.motesCollected = 320;
+    state.lumi = true;
+    state.lumiPos = { x: 700, y: 300, color: 'lumi', flap: 2 };
+    state.lulu = true;
+    state.luluPos = { x: 800, y: 300, color: 'lulu', flap: 2 };
+    state.koko = true;
+    state.kokoPos = { x: 620, y: 340, color: 'koko', flap: 2 };
+    state.zephyr = true;
+    state.zephyrPos = { x: 880, y: 340, color: 'zephyr', flap: 2 };
+    state.boss = { kind: 'ratu', x: 640, y: 168, r: 55, phase: 0.5, flash: 0, stun: 0, vx: 0, vy: 0 };
+    lightLanterns(state, 2);
+    state.hazards = [
+      { kind: 'scorpion', x: 300, y: 532, vx: 68, vy: 0, r: 22, speed: 88, phase: 0.5, age: 3, stun: 0, mode: 'hunt', lungeTimer: 0, lungeStart: 0, angle: 0 },
+    ];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_PLAY, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — night 5: a Void Scorpion crawls the floor.
+  if (name === 'scorpion') {
+    state.night = 5;
+    state.score = 4200;
+    state.lives = 3;
+    state.progress = 3;
+    state.motesCollected = 80;
+    state.lumi = true;
+    state.lumiPos = { x: 700, y: 300, color: 'lumi', flap: 2 };
+    lightLanterns(state, 1);
+    state.hazards = [
+      { kind: 'scorpion', x: 300, y: 532, vx: 68, vy: 0, r: 22, speed: 88, phase: 0.5, age: 3, stun: 0, mode: 'hunt', lungeTimer: 0, lungeStart: 0, angle: 0 },
+      { kind: 'shade', x: 900, y: 200, vx: -18, vy: 10, r: 21, speed: 84, phase: 0.8, age: 4, stun: 0, mode: 'hunt', angle: 0 },
+    ];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_PLAY, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — the night-3 illustration card, shown
+  // before the Lumi cutscene beats.
+  if (name === 'card3') {
+    state.night = 3;
+    state.score = 2100;
+    state.bonus = 450;
+    state.lives = 3;
+    state.progress = 0;
+    state.motesCollected = 48;
+    state.lumi = true;
+    state.lumiPos = { x: 700, y: 300, color: 'lumi', flap: 2 };
+    lightLanterns(state, 4);
+    state.motes = [placeMote(368, 226, 0.8), placeMote(884, 186, 2.2)];
+    state.hazards = [];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_CUTSCENE, best, cutscene: { night: 3, beat: 0, beatTime: 0, card: 'cardNight3', cardDone: false } };
   }
 
   if (name === 'play') {

@@ -3,11 +3,12 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_SKILLS = 'skills';
+export const SCREEN_SKINS = 'skins';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
@@ -83,67 +84,15 @@ function backgroundLayer() {
   layer.height = H;
   const ctx = layer.getContext('2d');
 
-  const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, C.skyTop);
-  sky.addColorStop(0.45, C.skyMid);
-  sky.addColorStop(0.78, C.skyLow);
-  sky.addColorStop(1, C.meadowLow);
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
-
-  // Stars: a fixed scatter with three sizes, brightest high in the sky.
+  // ANDROID BUILD ONLY (v1.6.0) — the sky, the stars and the moon live in
+  // the parallax SVG layers now (drawn in drawField); this cached layer
+  // holds only the ground, so the layers show through above the hills.
+  // The scatter below still feeds the grass blades.
   let seed = 20261117;
   const random = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
-  for (let index = 0; index < 150; index += 1) {
-    const x = random() * W;
-    const y = random() * 520;
-    const size = random() < 0.14 ? 1.9 : random() < 0.5 ? 1.15 : 0.7;
-    const alpha = 0.18 + random() * 0.55 * (1 - y / 640);
-    ctx.fillStyle = `rgba(223, 234, 255, ${alpha.toFixed(3)})`;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-    if (size > 1.7 && random() < 0.5) {
-      ctx.strokeStyle = `rgba(223, 234, 255, ${(alpha * 0.5).toFixed(3)})`;
-      ctx.lineWidth = 0.7;
-      ctx.beginPath();
-      ctx.moveTo(x - 3.5, y);
-      ctx.lineTo(x + 3.5, y);
-      ctx.moveTo(x, y - 3.5);
-      ctx.lineTo(x, y + 3.5);
-      ctx.stroke();
-    }
-  }
-
-  // A soft moon with a few pale craters and a wide halo.
-  const moonX = 1136;
-  const moonY = 170;
-  const halo = ctx.createRadialGradient(moonX, moonY, 26, moonX, moonY, 178);
-  halo.addColorStop(0, 'rgba(255, 231, 176, 0.20)');
-  halo.addColorStop(0.45, 'rgba(255, 220, 150, 0.07)');
-  halo.addColorStop(1, 'rgba(255, 220, 150, 0)');
-  ctx.fillStyle = halo;
-  ctx.beginPath();
-  ctx.arc(moonX, moonY, 178, 0, Math.PI * 2);
-  ctx.fill();
-  const moon = ctx.createRadialGradient(moonX - 14, moonY - 16, 7, moonX, moonY, 49);
-  moon.addColorStop(0, '#fffbe9');
-  moon.addColorStop(0.72, C.moon);
-  moon.addColorStop(1, '#e6c789');
-  ctx.fillStyle = moon;
-  ctx.beginPath();
-  ctx.arc(moonX, moonY, 48, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = 'rgba(146, 112, 52, 0.13)';
-  for (const [dx, dy, r] of [[-18, -10, 9], [14, 6, 12], [2, -26, 5], [-6, 24, 7]]) {
-    ctx.beginPath();
-    ctx.arc(moonX + dx, moonY + dy, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
   // Three receding hill lines, each darker than the one behind it.
   const hills = [
     { base: 512, colour: '#0a1a2d', amp: 34, waves: [[0.0031, 18], [0.0077, 9]] },
@@ -225,8 +174,25 @@ export function createRenderer(canvas) {
     badgeLumi: loadImage('skills/badge-lumi.svg'),
     badgeLulu: loadImage('skills/badge-lulu.svg'),
     badgePekat: loadImage('skills/badge-pekat.svg'),
+    // ANDROID BUILD ONLY (v1.6.0) — parallax backgrounds, the second boss,
+    // the scorpion, the new companions, the cutscene cards and the skins.
+    bgParallax1: loadImage('backgrounds/bg-parallax-1.svg'),
+    bgParallax2: loadImage('backgrounds/bg-parallax-2.svg'),
+    bgBossObsidian: loadImage('backgrounds/bg-boss-obsidian.svg'),
+    bossRatu: loadImage('bosses/boss-ratu-laba-laba.svg'),
+    enemyScorpion: loadImage('enemies/enemy-kalajengking-void.svg'),
+    companionKoko: loadImage('companions/companion-koko.svg'),
+    companionZephyr: loadImage('companions/companion-zephyr.svg'),
+    cardNight3: loadImage('cutscenes/cutscene-night-3.svg'),
+    cardNight6: loadImage('cutscenes/cutscene-night-6.svg'),
+    cardEnding: loadImage('cutscenes/cutscene-ending.svg'),
+    skinGolden: loadImage('skins/skin-luma-golden.svg'),
+    skinCyber: loadImage('skins/skin-luma-cyber.svg'),
   };
   const base = backgroundLayer();
+  // ANDROID BUILD ONLY (v1.6.0) — the active skin, set by draw() from
+  // main.js; drawMoth reads it when no skin is passed in the options.
+  let skin = 'luma';
 
   function resize() {
     const ratio = Math.min(2, window.devicePixelRatio || 1);
@@ -566,15 +532,20 @@ export function createRenderer(canvas) {
 
   // ANDROID BUILD ONLY (v1.3.0) — companions and the boss.
   function drawCompanion(companion, time) {
-    const isLumi = companion.color === 'lumi';
-    const core = isLumi ? 'rgba(143, 240, 208, 0.95)' : 'rgba(142, 203, 255, 0.95)';
-    const wing = isLumi ? 'rgba(210, 255, 238, 0.85)' : 'rgba(214, 235, 255, 0.85)';
+    const palette = {
+      lumi: { core: 'rgba(143, 240, 208, 0.95)', wing: 'rgba(210, 255, 238, 0.85)', glow: 'rgba(143, 240, 208, 0.28)' },
+      lulu: { core: 'rgba(142, 203, 255, 0.95)', wing: 'rgba(214, 235, 255, 0.85)', glow: 'rgba(142, 203, 255, 0.28)' },
+      koko: { core: 'rgba(251, 146, 60, 0.95)', wing: 'rgba(254, 215, 170, 0.85)', glow: 'rgba(251, 146, 60, 0.28)' },
+      zephyr: { core: 'rgba(192, 132, 252, 0.95)', wing: 'rgba(233, 213, 255, 0.85)', glow: 'rgba(192, 132, 252, 0.28)' },
+    }[companion.color] || { core: 'rgba(143, 240, 208, 0.95)', wing: 'rgba(210, 255, 238, 0.85)', glow: 'rgba(143, 240, 208, 0.28)' };
+    const core = palette.core;
+    const wing = palette.wing;
     const flap = Math.sin(companion.flap);
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     const glow = ctx.createRadialGradient(companion.x, companion.y, 0, companion.x, companion.y, 26);
     glow.addColorStop(0, core);
-    glow.addColorStop(0.4, isLumi ? 'rgba(143, 240, 208, 0.28)' : 'rgba(142, 203, 255, 0.28)');
+    glow.addColorStop(0.4, palette.glow);
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
@@ -622,9 +593,11 @@ export function createRenderer(canvas) {
     // circle, like the character portraits (Ø220, as in the approved
     // preview). The vector shadow below stays as the fallback until the
     // image loads. Hitbox and behaviour are unchanged.
-    const bossPortrait = portraitReady(portraits.darkPekat);
+    // ANDROID BUILD ONLY (v1.6.0) — the Spider Queen wears her own portrait.
+    const bossImg = boss.kind === 'ratu' ? portraits.bossRatu : portraits.darkPekat;
+    const bossPortrait = portraitReady(bossImg);
     if (bossPortrait) {
-      drawPortrait(portraits.darkPekat, 0, 0, 220, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
+      drawPortrait(bossImg, 0, 0, 220, boss.kind === 'ratu' ? 'rgba(192, 132, 252, 0.30)' : 'rgba(128, 60, 220, 0.30)', boss.kind === 'ratu' ? 'rgba(216, 180, 254, 0.95)' : 'rgba(169, 139, 255, 0.95)');
       if (boss.flash > 0) {
         ctx.globalAlpha = boss.flash * 0.5;
         ctx.fillStyle = '#ffd54f';
@@ -768,10 +741,13 @@ export function createRenderer(canvas) {
     ctx.scale(scale, scale);
     ctx.globalAlpha = alpha * flicker;
 
+    // ANDROID BUILD ONLY (v1.6.0) — the active skin swaps the moth's
+    // colours; the default skin (luma) keeps the old stops exactly.
+    const pal = SKIN_PALETTES[options.skin ?? skin] ?? null;
     const aura = ctx.createRadialGradient(0, 0, 2, 0, 0, 54);
-    aura.addColorStop(0, 'rgba(255, 243, 201, 0.35)');
-    aura.addColorStop(0.45, 'rgba(200, 255, 235, 0.12)');
-    aura.addColorStop(1, 'rgba(143, 240, 208, 0)');
+    aura.addColorStop(0, pal ? pal.aura[0] : 'rgba(255, 243, 201, 0.35)');
+    aura.addColorStop(0.45, pal ? pal.aura[1] : 'rgba(200, 255, 235, 0.12)');
+    aura.addColorStop(1, pal ? pal.aura[2] : 'rgba(143, 240, 208, 0)');
     ctx.fillStyle = aura;
     ctx.beginPath();
     ctx.arc(0, 0, 54, 0, Math.PI * 2);
@@ -784,9 +760,9 @@ export function createRenderer(canvas) {
       ctx.rotate(-0.18 * flap * side);
       // Upper wing.
       const upper = ctx.createLinearGradient(2, -18, 30, 8);
-      upper.addColorStop(0, 'rgba(255, 246, 223, 0.92)');
-      upper.addColorStop(0.55, 'rgba(201, 245, 227, 0.72)');
-      upper.addColorStop(1, 'rgba(143, 240, 208, 0.18)');
+      upper.addColorStop(0, pal ? pal.upper[0] : 'rgba(255, 246, 223, 0.92)');
+      upper.addColorStop(0.55, pal ? pal.upper[1] : 'rgba(201, 245, 227, 0.72)');
+      upper.addColorStop(1, pal ? pal.upper[2] : 'rgba(143, 240, 208, 0.18)');
       ctx.fillStyle = upper;
       ctx.beginPath();
       ctx.moveTo(2, -7);
@@ -794,13 +770,13 @@ export function createRenderer(canvas) {
       ctx.bezierCurveTo(27 * spread, 4, 12, 4, 2, -2);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 249, 228, 0.42)';
+      ctx.strokeStyle = pal ? pal.wingStroke : 'rgba(255, 249, 228, 0.42)';
       ctx.lineWidth = 0.9;
       ctx.stroke();
       // Lower wing.
       const lower = ctx.createLinearGradient(2, 2, 24, 24);
-      lower.addColorStop(0, 'rgba(255, 243, 201, 0.72)');
-      lower.addColorStop(1, 'rgba(255, 207, 107, 0.12)');
+      lower.addColorStop(0, pal ? pal.lower[0] : 'rgba(255, 243, 201, 0.72)');
+      lower.addColorStop(1, pal ? pal.lower[1] : 'rgba(255, 207, 107, 0.12)');
       ctx.fillStyle = lower;
       ctx.beginPath();
       ctx.moveTo(2, 2);
@@ -814,18 +790,18 @@ export function createRenderer(canvas) {
     }
     // Body, head, antennae.
     const body = ctx.createLinearGradient(0, -14, 0, 18);
-    body.addColorStop(0, '#fff8e4');
-    body.addColorStop(0.55, '#ffe4a3');
-    body.addColorStop(1, '#c98d45');
+    body.addColorStop(0, pal ? pal.body[0] : '#fff8e4');
+    body.addColorStop(0.55, pal ? pal.body[1] : '#ffe4a3');
+    body.addColorStop(1, pal ? pal.body[2] : '#c98d45');
     ctx.fillStyle = body;
     ctx.beginPath();
     ctx.ellipse(0, 3, 5.2, 14, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#fff3c9';
+    ctx.fillStyle = pal ? pal.head : '#fff3c9';
     ctx.beginPath();
     ctx.arc(0, -12, 5.3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 243, 201, 0.8)';
+    ctx.strokeStyle = pal ? pal.antenna : 'rgba(255, 243, 201, 0.8)';
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(-2.5, -16);
@@ -838,6 +814,27 @@ export function createRenderer(canvas) {
     ctx.arc(-2, -12.5, 1.15, 0, Math.PI * 2);
     ctx.arc(2, -12.5, 1.15, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — the Void Scorpion, drawn with the user's
+  // own SVG in a circle like the boss portrait; the vector ring stands in
+  // until the image loads.
+  function drawScorpion(hazard, time) {
+    ctx.save();
+    ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 2);
+    const img = portraits.enemyScorpion;
+    if (portraitReady(img)) {
+      drawPortrait(img, 0, 0, 64, 'rgba(192, 132, 252, 0.30)', 'rgba(216, 180, 254, 0.95)');
+    } else {
+      ctx.fillStyle = 'rgba(23, 16, 41, 0.95)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -960,13 +957,29 @@ export function createRenderer(canvas) {
   }
 
   function drawField(state, time, hideMoth = false, sparse = false) {
-    ctx.drawImage(base, 0, 0);
+    if (state.boss) {
+      // ANDROID BUILD ONLY (v1.6.0) — boss nights fight in the obsidian nest.
+      if (portraitReady(portraits.bgBossObsidian)) ctx.drawImage(portraits.bgBossObsidian, 0, 0);
+      else ctx.drawImage(base, 0, 0);
+    } else {
+      // ANDROID BUILD ONLY (v1.6.0) — parallax: the sky and the crystal
+      // forest drift with the moth; the procedural meadow stays in front.
+      const drift = state.player.x - FIELD.width / 2;
+      if (portraitReady(portraits.bgParallax1)) {
+        ctx.drawImage(portraits.bgParallax1, -30 + drift * 0.03, -17, 1340, 754);
+      }
+      if (portraitReady(portraits.bgParallax2)) {
+        ctx.drawImage(portraits.bgParallax2, -60 + drift * 0.08, -34, 1400, 788);
+      }
+      ctx.drawImage(base, 0, 0);
+    }
     drawFireflies(state, time);
     drawLanterns(state, time, sparse);
     drawDew(state, time);
     drawMotes(state, time);
     for (const hazard of state.hazards) {
       if (hazard.kind === 'shade') drawShade(hazard, time);
+      else if (hazard.kind === 'scorpion') drawScorpion(hazard, time);
       else drawDart(hazard, time);
     }
     if (state.boss) drawBoss(state.boss, state, time);
@@ -976,6 +989,8 @@ export function createRenderer(canvas) {
     if (!hideMoth) {
       if (state.lumi && state.lumiPos) drawCompanion(state.lumiPos, time);
       if (state.lulu && state.luluPos) drawCompanion(state.luluPos, time);
+      if (state.koko && state.kokoPos) drawCompanion(state.kokoPos, time);
+      if (state.zephyr && state.zephyrPos) drawCompanion(state.zephyrPos, time);
     }
     if (!hideMoth && state.shield) drawShield(state, time);
     if (!hideMoth && state.shieldPop > 0) drawShieldPop(state);
@@ -1319,13 +1334,36 @@ export function createRenderer(canvas) {
     ctx.fill();
     ctx.restore();
     label(ctx, 'SKILL', SKILL_BUTTON.x + 80, skillCy + 5, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center' });
+
+    // ANDROID BUILD ONLY (v1.6.0) — the SKIN button, same style, left of SKILL.
+    ctx.save();
+    roundedRect(ctx, SKIN_BUTTON.x, SKIN_BUTTON.y, SKIN_BUTTON.w, SKIN_BUTTON.h, 20);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    const skinCy = SKIN_BUTTON.y + SKIN_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(SKIN_BUTTON.x + 10, skinCy);
+    ctx.lineTo(SKIN_BUTTON.x + 18, skinCy - 8);
+    ctx.lineTo(SKIN_BUTTON.x + 26, skinCy);
+    ctx.lineTo(SKIN_BUTTON.x + 18, skinCy + 8);
+    ctx.closePath();
+    ctx.fillStyle = C.amber;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'SKIN', SKIN_BUTTON.x + 80, skinCy + 5, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center' });
   }
 
   // ANDROID BUILD ONLY (v1.5.0) — the Skill & Badge guide. Display only:
   // the skills are buffs, nothing here is clicked except KEMBALI. Each icon
   // is the user's own SVG; until it loads, a coloured ring + letter stands
   // in. Badges unlock when their night is cleared (night 3 Lumi, night 6
-  // Lulu, night 10 Dark Pekat) and stay earned in localStorage.
+  // Lulu, night 10 Dark Pekat, night 20 Ratu Laba-laba) and stay earned in
+  // localStorage.
   function drawSkills(state, badges, time) {
     overlay(0.58);
     ctx.save();
@@ -1337,54 +1375,59 @@ export function createRenderer(canvas) {
     ctx.stroke();
     ctx.restore();
     label(ctx, 'SKILL & BADGE', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
-    label(ctx, 'Kekuatan cahaya Luma, Lumi & Lulu', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+    label(ctx, 'Kekuatan cahaya Luma, Lumi, Lulu, Koko & Zephyr', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
 
-    let y = 132;
-    for (const skill of SKILL_GUIDE) {
+    // ANDROID BUILD ONLY (v1.6.0) — six skills now, in two columns of three.
+    const colX = [70, 660];
+    SKILL_GUIDE.forEach((skill, index) => {
+      const col = index % 2;
+      const row = Math.floor(index / 2);
+      const y = 132 + row * 92;
       const cy = y + 32;
+      const iconCx = colX[col] + 48;
+      const textX = colX[col] + 96;
       const img = portraits[skill.portrait];
       if (portraitReady(img)) {
-        drawPortrait(img, 148, cy, 64, hexA(skill.color, 0.30), hexA(skill.color, 0.95));
+        drawPortrait(img, iconCx, cy, 64, hexA(skill.color, 0.30), hexA(skill.color, 0.95));
       } else {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(148, cy, 32, 0, Math.PI * 2);
+        ctx.arc(iconCx, cy, 32, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(12, 18, 28, 1)';
         ctx.fill();
         ctx.strokeStyle = skill.color;
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.restore();
-        label(ctx, skill.letter, 148, cy + 1, { font: `700 30px ${BODY_FONT}`, color: skill.color, align: 'center', baseline: 'middle' });
+        label(ctx, skill.letter, iconCx, cy + 1, { font: `700 30px ${BODY_FONT}`, color: skill.color, align: 'center', baseline: 'middle' });
       }
-      label(ctx, skill.name, 200, y + 12, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'left' });
+      label(ctx, skill.name, textX, y + 12, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'left' });
       ctx.save();
       ctx.font = `700 19px ${MONO_FONT}`;
       const nameWidth = ctx.measureText(skill.name).width;
       ctx.restore();
-      label(ctx, `—  ${skill.tag}`, 200 + nameWidth + 14, y + 12, { font: `700 12px ${MONO_FONT}`, color: skill.color, align: 'left' });
-      const descLines = wrapLines(skill.desc, 980, `500 15px ${BODY_FONT}`);
+      label(ctx, `—  ${skill.tag}`, textX + nameWidth + 14, y + 12, { font: `700 12px ${MONO_FONT}`, color: skill.color, align: 'left' });
+      const descLines = wrapLines(skill.desc, 440, `500 15px ${BODY_FONT}`);
       let lineY = y + 40;
       for (const line of descLines) {
-        label(ctx, line, 200, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'left' });
+        label(ctx, line, textX, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'left' });
         lineY += 20;
       }
-      y += 88;
-    }
+    });
 
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(120, 496);
-    ctx.lineTo(W - 120, 496);
+    ctx.moveTo(120, 440);
+    ctx.lineTo(W - 120, 440);
     ctx.stroke();
     ctx.restore();
-    label(ctx, 'BADGE  —  DIDAPAT SAAT MENAMATKAN MALAM', W / 2, 518, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+    label(ctx, 'BADGE  —  DIDAPAT SAAT MENAMATKAN MALAM', W / 2, 462, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
 
     BADGE_GUIDE.forEach((badge, index) => {
-      const cx = 440 + index * 200;
-      const cy = 572;
+      const cx = 340 + index * 200;
+      const cy = 520;
       const earned = badges[badge.id] === true;
       const img = portraits[badge.portrait];
       if (earned && portraitReady(img)) {
@@ -1412,10 +1455,88 @@ export function createRenderer(canvas) {
         ctx.restore();
         label(ctx, String(badge.night), cx, cy + 1, { font: `700 26px ${BODY_FONT}`, color: 'rgba(120, 130, 150, 1)', align: 'center', baseline: 'middle' });
       }
-      label(ctx, badge.name, cx, 624, { font: `700 13px ${MONO_FONT}`, color: earned ? C.cream : C.textDim, align: 'center', spacing: 1 });
-      label(ctx, earned ? 'DIDAPAT' : 'TERKUNCI', cx, 642, { font: `700 11px ${MONO_FONT}`, color: earned ? C.mint : C.textDim, align: 'center', spacing: 1 });
+      label(ctx, badge.name, cx, 572, { font: `700 13px ${MONO_FONT}`, color: earned ? C.cream : C.textDim, align: 'center', spacing: 1 });
+      label(ctx, earned ? 'DIDAPAT' : 'TERKUNCI', cx, 590, { font: `700 11px ${MONO_FONT}`, color: earned ? C.mint : C.textDim, align: 'center', spacing: 1 });
     });
 
+    ctx.save();
+    roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+    const backCx = BACK_BUTTON.x + BACK_BUTTON.w / 2;
+    const backCy = BACK_BUTTON.y + BACK_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backCx - 38, backCy);
+    ctx.lineTo(backCx - 28, backCy - 7);
+    ctx.lineTo(backCx - 28, backCy + 7);
+    ctx.closePath();
+    ctx.fillStyle = C.cream;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    void state;
+    void time;
+  }
+
+  // ANDROID BUILD ONLY (v1.6.0) — pick the moth's skin. Tap a card to
+  // choose it (saved at once); KEMBALI returns to the title. The in-flight
+  // moth is drawn procedurally — the skin only swaps its colours.
+  function drawSkinScreen(state, skin, time) {
+    overlay(0.58);
+    ctx.save();
+    roundedRect(ctx, 40, 28, 1200, 668, 18);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'PILIH SKIN', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Warna sayap Luma di dalam game', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+    for (const option of SKINS) {
+      const card = SKIN_CARDS.find((entry) => entry.id === option.id);
+      const cx = card.x + card.w / 2;
+      const selected = skin === option.id;
+      ctx.save();
+      roundedRect(ctx, card.x, card.y, card.w, card.h, 18);
+      ctx.fillStyle = selected ? 'rgba(255, 207, 107, 0.14)' : 'rgba(5, 8, 14, 0.5)';
+      ctx.fill();
+      ctx.strokeStyle = selected ? 'rgba(255, 207, 107, 0.95)' : 'rgba(169, 183, 201, 0.35)';
+      ctx.lineWidth = selected ? 2.5 : 1.4;
+      ctx.stroke();
+      ctx.restore();
+      const img = portraits[option.portrait];
+      if (portraitReady(img)) {
+        drawPortrait(img, cx, 310, 200, hexA(option.color, 0.30), hexA(option.color, 0.95));
+      } else {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, 310, 100, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(12, 18, 28, 1)';
+        ctx.fill();
+        ctx.strokeStyle = option.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+        label(ctx, option.name[0], cx, 311, { font: `700 64px ${BODY_FONT}`, color: option.color, align: 'center', baseline: 'middle' });
+      }
+      label(ctx, option.name, cx, 460, { font: `700 20px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+      label(ctx, option.tag, cx, 486, { font: `700 12px ${MONO_FONT}`, color: option.color, align: 'center', spacing: 1 });
+      const descLines = wrapLines(option.desc, 300, `500 14px ${BODY_FONT}`);
+      let lineY = 512;
+      for (const line of descLines) {
+        label(ctx, line, cx, lineY, { font: `500 14px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
+        lineY += 19;
+      }
+      if (selected) {
+        label(ctx, 'DIPILIH', cx, 556, { font: `700 14px ${MONO_FONT}`, color: C.amber, align: 'center', spacing: 2 });
+      }
+    }
     ctx.save();
     roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
     ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
@@ -1497,6 +1618,20 @@ export function createRenderer(canvas) {
     const beats = scene.beats;
     const beat = cutscene ? Math.min(cutscene.beat, beats.length - 1) : 0;
     const line = beats[beat];
+    // ANDROID BUILD ONLY (v1.6.0) — the illustration card comes first: the
+    // user's own full-screen scene, with its own text baked in. Tap/Enter
+    // moves on to the dialogue beats.
+    if (cutscene && cutscene.card && !cutscene.cardDone) {
+      const cardImg = portraits[cutscene.card];
+      if (portraitReady(cardImg)) {
+        ctx.drawImage(cardImg, 0, 0, W, H);
+      } else {
+        overlay(0.58);
+        label(ctx, scene.title, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
+      }
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 690, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      return;
+    }
     const speakers = {
       luma: { name: 'LUMA', color: C.amber, img: portraits.luma, glow: 'rgba(255, 213, 79, 0.30)' },
       lumi: { name: 'LUMI', color: C.lumi, img: portraits.lumi, glow: 'rgba(143, 240, 208, 0.30)' },
@@ -1656,7 +1791,20 @@ export function createRenderer(canvas) {
     void time;
   }
 
-  function drawEpilogueScreen(state, page, time) {
+  function drawEpilogueScreen(state, page, time, card = false) {
+    // ANDROID BUILD ONLY (v1.6.0) — the ending illustration comes first:
+    // the user's own dawn scene, with its own text baked in.
+    if (card) {
+      const cardImg = portraits.cardEnding;
+      if (portraitReady(cardImg)) {
+        ctx.drawImage(cardImg, 0, 0, W, H);
+      } else {
+        overlay(0.58);
+        label(ctx, STRINGS.epilogueTitle, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
+      }
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 690, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      return;
+    }
     const pages = [STRINGS.epilogue.slice(0, 2), STRINGS.epilogue.slice(2)];
     const pageIndex = Math.max(0, Math.min(page ?? 0, pages.length - 1));
     const isLast = pageIndex >= pages.length - 1;
@@ -1701,7 +1849,11 @@ export function createRenderer(canvas) {
       ? { img: portraits.lumi, name: 'LUMI', glow: 'rgba(143, 240, 208, 0.30)' }
       : state.night === 6
         ? { img: portraits.lulu, name: 'LULU', glow: 'rgba(142, 203, 255, 0.30)' }
-        : null;
+        : state.night === 9
+          ? { img: portraits.companionKoko, name: 'KOKO', glow: 'rgba(251, 146, 60, 0.30)' }
+          : state.night === 12
+            ? { img: portraits.companionZephyr, name: 'ZEPHYR', glow: 'rgba(192, 132, 252, 0.30)' }
+            : null;
     if (join !== null && portraitReady(join.img)) {
       const dawnStory = STRINGS.dawnStory[state.night - 1];
       label(ctx, STRINGS.dawn, W / 2, 132, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
@@ -1717,30 +1869,50 @@ export function createRenderer(canvas) {
       label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 512, { font: `700 44px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
       label(ctx, 'NIGHT BONUS', W / 2, 540, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
       label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 572, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
-      drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 632);
+      // ANDROID BUILD ONLY (v1.6.0) — Koko joins on night 9, the night
+      // before a boss night, so the warning must show here too: the join
+      // branch returns early and the boss-warning branch below never runs.
+      // The boss portrait rides small beside the warning line.
+      const warnsBoss = (state.night + 1) % BOSS.every === 0;
+      if (warnsBoss) {
+        const warnKind = bossKind(state.night + 1);
+        const warnImg = warnKind === 'ratu' ? portraits.bossRatu : portraits.darkPekat;
+        if (portraitReady(warnImg)) {
+          drawPortrait(warnImg, W / 2 - 250, 598, 30, warnKind === 'ratu' ? 'rgba(192, 132, 252, 0.30)' : 'rgba(128, 60, 220, 0.30)', warnKind === 'ratu' ? 'rgba(216, 180, 254, 0.95)' : 'rgba(169, 139, 255, 0.95)');
+        }
+        label(ctx, `MALAM ${state.night + 1} — ${BOSS_KINDS[warnKind].name} MENANTI`, W / 2, 600, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+      }
+      drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, warnsBoss ? 662 : 632);
       void time;
       return;
     }
     // ANDROID BUILD ONLY (v1.4.2) — the night before a boss night, Dark
     // Pekat's portrait warns the player, like the approved preview.
     const nextNight = state.night + 1;
-    if (nextNight % BOSS.every === 0 && portraitReady(portraits.darkPekat)) {
+    // ANDROID BUILD ONLY (v1.6.0) — the warning wears the next boss's face:
+    // Dark Pekat, or the Spider Queen on nights 20, 40, ...
+    const nextKind = bossKind(nextNight);
+    const nextBossImg = nextKind === 'ratu' ? portraits.bossRatu : portraits.darkPekat;
+    const nextBossName = BOSS_KINDS[nextKind].name;
+    if (nextNight % BOSS.every === 0 && portraitReady(nextBossImg)) {
       label(ctx, `MALAM ${nextNight}`, W / 2, 96, { font: `700 54px ${TITLE_FONT}`, color: C.cream, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(169, 139, 255, 0.5)' });
-      drawPortrait(portraits.darkPekat, W / 2, 232, 150, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
-      label(ctx, 'DARK PEKAT'.split('').join(' '), W / 2, 322, { font: `700 18px ${MONO_FONT}`, color: '#a98bff', align: 'center', spacing: 3 });
+      drawPortrait(nextBossImg, W / 2, 232, 150, nextKind === 'ratu' ? 'rgba(192, 132, 252, 0.30)' : 'rgba(128, 60, 220, 0.30)', nextKind === 'ratu' ? 'rgba(216, 180, 254, 0.95)' : 'rgba(169, 139, 255, 0.95)');
+      label(ctx, nextBossName.split('').join(' '), W / 2, 322, { font: `700 18px ${MONO_FONT}`, color: nextKind === 'ratu' ? '#c084fc' : '#a98bff', align: 'center', spacing: 3 });
       // v1.4.6: the night's own story line, not the generic hint — the hint
       // is already in the boss cutscene (Lumi's last beat), and without this
       // the night-9 Kronik line never appeared anywhere.
       const bossStory = state.night <= STRINGS.dawnStory.length
         ? STRINGS.dawnStory[state.night - 1]
-        : 'Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.';
+        : nextKind === 'ratu'
+          ? 'Jaring bayangan menutupi langit. Nyalakan keempat lampion — setiap cahaya yang menyala membakar jaring sang Ratu.'
+          : 'Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.';
       const bossLines = wrapLines(bossStory, 920, `italic 500 21px ${TITLE_FONT}`);
       let bossY = 356;
       for (const line of bossLines) {
         label(ctx, line, W / 2, bossY, { font: `italic 500 21px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
         bossY += 30;
       }
-      label(ctx, `MALAM ${nextNight} — DARK PEKAT MENANTI`, W / 2, bossY + 14, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+      label(ctx, `MALAM ${nextNight} — ${nextBossName} MENANTI`, W / 2, bossY + 14, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
       label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, bossY + 48, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
       label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, bossY + 90, { font: `700 44px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
       label(ctx, 'NIGHT BONUS', W / 2, bossY + 118, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
@@ -1766,7 +1938,7 @@ export function createRenderer(canvas) {
     }
     const shift = (storyLines.length - 1) * 30;
     if ((state.night + 1) % BOSS.every === 0) {
-      label(ctx, `MALAM ${state.night + 1} — DARK PEKAT MENANTI`, W / 2, 296 + shift, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+      label(ctx, `MALAM ${state.night + 1} — ${BOSS_KINDS[bossKind(state.night + 1)].name} MENANTI`, W / 2, 296 + shift, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
     }
     label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, 330 + shift, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
     label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 390 + shift, { font: `700 52px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
@@ -1786,6 +1958,7 @@ export function createRenderer(canvas) {
 
   function draw(state, screen, best, extra = {}) {
     begin();
+    skin = extra.skin ?? 'luma';
     const time = state.time + (extra.timeOffset ?? 0);
     const shake = state.shake;
     ctx.save();
@@ -1796,8 +1969,9 @@ export function createRenderer(canvas) {
     ctx.restore();
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
     else if (screen === SCREEN_SKILLS) drawSkills(state, extra.badges ?? {}, time);
+    else if (screen === SCREEN_SKINS) drawSkinScreen(state, extra.skin ?? 'luma', time);
     else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
-    else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time);
+    else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time, extra.epilogueCard === true);
     else if (screen === SCREEN_CUTSCENE) {
       if (extra.cutscene) drawCutsceneScreen(state, extra.cutscene, time);
       else drawDawnScreen(state, time, extra.demo === true);

@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720">
+  <defs>
+    <!-- Glorious Dawn Sky Gradient -->
+    <linearGradient id="dawnSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="35%" stop-color="#431407" />
+      <stop offset="65%" stop-color="#c2410c" />
+      <stop offset="85%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+    <!-- Rising Sun Corona -->
+    <radialGradient id="risingSun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="30%" stop-color="#fef08a" />
+      <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0" />
+    </radialGradient>
+    <filter id="dawnGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="9" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#dawnSky)" />
+
+  <!-- Rising Sun at Center Horizon -->
+  <circle cx="640" cy="500" r="380" fill="url(#risingSun)" filter="url(#dawnGlow)" />
+  <circle cx="640" cy="500" r="160" fill="#ffffff" />
+
+  <!-- Sun Rays Radiating into Sky -->
+  <g stroke="#fef08a" stroke-width="3" stroke-opacity="0.4" filter="url(#dawnGlow)">
+    <line x1="640" y1="500" x2="100" y2="100" />
+    <line x1="640" y1="500" x2="300" y2="50" />
+    <line x1="640" y1="500" x2="500" y2="20" />
+    <line x1="640" y1="500" x2="780" y2="20" />
+    <line x1="640" y1="500" x2="980" y2="50" />
+    <line x1="640" y1="500" x2="1180" y2="100" />
+  </g>
+
+  <!-- Rolling Green Hills in Golden Dawn Light -->
+  <path d="M 0 530 Q 340 470 640 490 Q 940 470 1280 530 L 1280 720 L 0 720 Z" fill="#065f46" opacity="0.9" />
+  <path d="M 0 570 Q 300 530 640 550 Q 1000 520 1280 560 L 1280 720 L 0 720 Z" fill="#047857" />
+  <path d="M 0 620 Q 400 580 800 600 Q 1100 570 1280 610 L 1280 720 L 0 720 Z" fill="#059669" />
+
+  <!-- Blooming Flowers on Hills -->
+  <g fill="#fef08a" opacity="0.85">
+    <circle cx="180" cy="620" r="6" />
+    <circle cx="280" cy="640" r="5" />
+    <circle cx="480" cy="610" r="6" />
+    <circle cx="820" cy="620" r="7" />
+    <circle cx="1020" cy="630" r="5" />
+  </g>
+
+  <!-- Dissolving Dark Pekat Smoke Wisp at Far Corner (Defeated) -->
+  <g stroke="#3b0764" stroke-width="4" stroke-linecap="round" opacity="0.35" filter="url(#dawnGlow)">
+    <path d="M 1180 380 Q 1200 320 1240 280" />
+    <path d="M 1160 410 Q 1210 360 1220 310" />
+  </g>
+
+  <!-- TRIO FLYING TRIUMPHANTLY INTO DAWN SKY -->
+  <!-- Luma (Center Lead) -->
+  <g transform="translate(640, 240)">
+    <circle cx="0" cy="0" r="75" fill="rgba(254, 240, 138, 0.6)" filter="url(#dawnGlow)" />
+    <ellipse cx="-38" cy="-15" rx="46" ry="20" transform="rotate(-25 -38 -15)" fill="#fef08a" stroke="#ca8a04" stroke-width="2" />
+    <ellipse cx="38" cy="-15" rx="46" ry="20" transform="rotate(25 38 -15)" fill="#fef08a" stroke="#ca8a04" stroke-width="2" />
+    <ellipse cx="0" cy="30" rx="26" ry="22" fill="#fde047" />
+    <ellipse cx="0" cy="-15" rx="24" ry="22" fill="#86efac" stroke="#166534" stroke-width="2" />
+    <circle cx="-9" cy="-16" r="4.5" fill="#ffffff" />
+    <circle cx="9" cy="-16" r="4.5" fill="#ffffff" />
+  </g>
+
+  <!-- Lumi (Left Wingman) -->
+  <g transform="translate(490, 290)">
+    <circle cx="0" cy="0" r="65" fill="rgba(110, 231, 183, 0.55)" filter="url(#dawnGlow)" />
+    <ellipse cx="-32" cy="-12" rx="38" ry="17" transform="rotate(-25 -32 -12)" fill="#a7f3d0" stroke="#059669" stroke-width="2" />
+    <ellipse cx="32" cy="-12" rx="38" ry="17" transform="rotate(25 32 -12)" fill="#a7f3d0" stroke="#059669" stroke-width="2" />
+    <ellipse cx="0" cy="24" rx="22" ry="18" fill="#6ee7b7" />
+    <ellipse cx="0" cy="-12" rx="20" ry="18" fill="#8ff0d0" stroke="#047857" stroke-width="2" />
+  </g>
+
+  <!-- Lulu (Right Wingman) -->
+  <g transform="translate(790, 290)">
+    <circle cx="0" cy="0" r="65" fill="rgba(125, 211, 252, 0.55)" filter="url(#dawnGlow)" />
+    <ellipse cx="-32" cy="-12" rx="38" ry="17" transform="rotate(-25 -32 -12)" fill="#bae6fd" stroke="#0284c7" stroke-width="2" />
+    <ellipse cx="32" cy="-12" rx="38" ry="17" transform="rotate(25 32 -12)" fill="#bae6fd" stroke="#0284c7" stroke-width="2" />
+    <ellipse cx="0" cy="24" rx="22" ry="18" fill="#7dd3fc" />
+    <ellipse cx="0" cy="-12" rx="20" ry="18" fill="#8ecbff" stroke="#0369a1" stroke-width="2" />
+  </g>
+
+  <!-- Header Banner -->
+  <g text-anchor="middle">
+    <rect x="360" y="35" width="560" height="52" rx="26" fill="rgba(15, 23, 42, 0.85)" stroke="#facc15" stroke-width="2" />
+    <text x="640" y="67" font-family="'Cinzel', serif" font-weight="900" font-size="22" fill="#fde047" letter-spacing="4">
+      VICTORY • DAWN BREAKS
+    </text>
+  </g>
+
+  <!-- Fixed Dialogue Box Overlay with Multi-line TSPAN (No Overflow!) -->
+  <g>
+    <rect x="140" y="575" width="1000" height="115" rx="22" fill="rgba(10, 15, 29, 0.93)" stroke="#facc15" stroke-width="2.5" />
+    <!-- Speaker Title -->
+    <text x="180" y="608" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="16" fill="#fde047" letter-spacing="1">
+      FAJAR ABADI MEREKAH:
+    </text>
+    <!-- Multi-line wrapped text -->
+    <text x="180" y="638" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="15" fill="#f1f5f9">
+      <tspan x="180" dy="0">"Keempat lampion menyala sempurna menyapu seluruh kegelapan di padang rumput!</tspan>
+      <tspan x="180" dy="25">Luma, Lumi, dan Lulu kini terbang bebas menyongsong hangatnya mentari pagi."</tspan>
+    </text>
+  </g>
+</svg>

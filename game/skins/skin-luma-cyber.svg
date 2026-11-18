@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <defs>
+    <!-- Cyber Grid Neon Aura -->
+    <radialGradient id="cyberAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.8" />
+      <stop offset="40%" stop-color="#ec4899" stop-opacity="0.4" />
+      <stop offset="75%" stop-color="#3b0764" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#030712" stop-opacity="0" />
+    </radialGradient>
+    <!-- Carbon Chitin Gradient -->
+    <linearGradient id="carbonArmor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="40%" stop-color="#1e293b" />
+      <stop offset="85%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <circle cx="160" cy="160" r="145" fill="url(#cyberAura)" />
+
+  <!-- Holographic Circuit Wings (Sayap Sirkuit Neon) -->
+  <!-- Left Top Wing -->
+  <g filter="url(#neonGlow)">
+    <ellipse cx="80" cy="115" rx="76" ry="30" transform="rotate(-35 80 115)" fill="rgba(6, 182, 212, 0.25)" stroke="#22d3ee" stroke-width="2.5" />
+    <!-- Circuit PCB Traces on Wing -->
+    <path d="M 120 135 L 75 110 L 40 115 M 75 110 L 60 85 L 35 90" stroke="#06b6d4" stroke-width="2" fill="none" />
+    <circle cx="40" cy="115" r="3.5" fill="#22d3ee" />
+    <circle cx="35" cy="90" r="3" fill="#22d3ee" />
+  </g>
+
+  <!-- Left Bottom Wing -->
+  <ellipse cx="95" cy="160" rx="55" ry="22" transform="rotate(-15 95 160)" fill="rgba(236, 72, 153, 0.25)" stroke="#f472b6" stroke-width="2" />
+
+  <!-- Right Top Wing -->
+  <g filter="url(#neonGlow)">
+    <ellipse cx="240" cy="115" rx="76" ry="30" transform="rotate(35 240 115)" fill="rgba(6, 182, 212, 0.25)" stroke="#22d3ee" stroke-width="2.5" />
+    <!-- Circuit PCB Traces on Wing -->
+    <path d="M 200 135 L 245 110 L 280 115 M 245 110 L 260 85 L 285 90" stroke="#06b6d4" stroke-width="2" fill="none" />
+    <circle cx="280" cy="115" r="3.5" fill="#22d3ee" />
+    <circle cx="285" cy="90" r="3" fill="#22d3ee" />
+  </g>
+
+  <!-- Right Bottom Wing -->
+  <ellipse cx="225" cy="160" rx="55" ry="22" transform="rotate(15 225 160)" fill="rgba(236, 72, 153, 0.25)" stroke="#f472b6" stroke-width="2" />
+
+  <!-- Abdomen: Neon Cyber Matrix Reactor (Lentera Reaktor Cyber) -->
+  <g filter="url(#neonGlow)">
+    <circle cx="160" cy="225" r="44" fill="#0891b2" />
+    <circle cx="160" cy="225" r="30" fill="#22d3ee" />
+    <circle cx="160" cy="225" r="16" fill="#ffffff" />
+    <!-- Arc Reactor Segments -->
+    <path d="M 160 185 L 160 265 M 120 225 L 200 225" stroke="#ec4899" stroke-width="3" />
+  </g>
+  <!-- Cyber Housing Casing -->
+  <path d="M 125 210 Q 160 235 195 210" stroke="#38bdf8" stroke-width="3" fill="none" />
+  <path d="M 130 235 Q 160 260 190 235" stroke="#ec4899" stroke-width="3" fill="none" />
+
+  <!-- Cybernetic Carbon Chestplate -->
+  <path d="M 135 145 L 185 145 L 175 190 L 145 190 Z" fill="url(#carbonArmor)" stroke="#06b6d4" stroke-width="2.5" />
+  <line x1="160" y1="145" x2="160" y2="185" stroke="#ec4899" stroke-width="2" />
+
+  <!-- Cyber Limbs with Glowing Joints -->
+  <path d="M 135 160 Q 110 170 120 185" stroke="#1e293b" stroke-width="6" stroke-linecap="round" fill="none" />
+  <circle cx="120" cy="185" r="4" fill="#06b6d4" />
+  <path d="M 185 160 Q 210 170 200 185" stroke="#1e293b" stroke-width="6" stroke-linecap="round" fill="none" />
+  <circle cx="200" cy="185" r="4" fill="#06b6d4" />
+
+  <!-- Cyber Helmet & Head -->
+  <ellipse cx="160" cy="115" rx="42" ry="36" fill="url(#carbonArmor)" stroke="#06b6d4" stroke-width="3" />
+  <!-- Cyber Visor / Headplate Antennae -->
+  <path d="M 145 88 Q 120 45 110 25" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+  <circle cx="110" cy="25" r="4" fill="#f472b6" filter="url(#neonGlow)" />
+  <path d="M 175 88 Q 200 45 210 25" stroke="#ec4899" stroke-width="4" stroke-linecap="round" fill="none" />
+  <circle cx="210" cy="25" r="4" fill="#f472b6" filter="url(#neonGlow)" />
+
+  <!-- Cyber Visor Glasses (Neon Glowing Eyes) -->
+  <g filter="url(#neonGlow)">
+    <rect x="130" y="102" width="25" height="20" rx="6" fill="#06b6d4" stroke="#ffffff" stroke-width="1.5" />
+    <rect x="165" y="102" width="25" height="20" rx="6" fill="#06b6d4" stroke="#ffffff" stroke-width="1.5" />
+    <circle cx="138" cy="110" r="3" fill="#ffffff" />
+    <circle cx="173" cy="110" r="3" fill="#ffffff" />
+  </g>
+
+  <!-- Cool Cyber Mask Grille / Smile -->
+  <path d="M 152 132 Q 160 138 168 132" stroke="#ec4899" stroke-width="2.5" fill="none" stroke-linecap="round" />
+</svg>
