@@ -265,14 +265,19 @@ export function createRenderer(canvas) {
       if (glow > 0.01) {
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';
-        const halo = ctx.createRadialGradient(0, 0, 8, 0, 0, 190 + pulse * 45);
-        halo.addColorStop(0, `rgba(255, 226, 158, ${(0.32 * glow).toFixed(3)})`);
-        halo.addColorStop(0.4, `rgba(255, 196, 96, ${(0.13 * glow).toFixed(3)})`);
-        halo.addColorStop(1, 'rgba(255, 196, 96, 0)');
-        ctx.fillStyle = halo;
-        ctx.beginPath();
-        ctx.arc(0, 0, 210 + pulse * 45, 0, Math.PI * 2);
-        ctx.fill();
+        // 3-layer bloom/glow
+        for (let i = 0; i < 3; i++) {
+          const opacity = [0.7, 0.4, 0.2][i];
+          const radiusMult = [1, 1.5, 2][i];
+          const halo = ctx.createRadialGradient(0, 0, 8, 0, 0, (190 + pulse * 45) * radiusMult);
+          halo.addColorStop(0, `rgba(255, 213, 79, ${(0.32 * glow * opacity).toFixed(3)})`);
+          halo.addColorStop(0.4, `rgba(255, 196, 96, ${(0.13 * glow * opacity).toFixed(3)})`);
+          halo.addColorStop(1, 'rgba(255, 196, 96, 0)');
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(0, 0, (210 + pulse * 45) * radiusMult, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.restore();
       }
       // Post and foot.
@@ -600,8 +605,7 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawParticles(state) {
-    ctx.save();
+  function drawParticles(state) {    ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     for (const particle of state.particles) {
       const alpha = clamp(particle.life / Math.max(0.001, particle.maxLife), 0, 1);
@@ -627,6 +631,26 @@ export function createRenderer(canvas) {
         ctx.arc(particle.x, particle.y, particle.size * alpha, 0, Math.PI * 2);
         ctx.fill();
       }
+    }
+    ctx.restore();
+  }
+
+  // Floating score numbers: small, warm and rising, so a collected mote reads as a reward.
+  function drawPops(state) {
+    if (!state.pops || state.pops.length === 0) return;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    for (const pop of state.pops) {
+      const t = clamp(pop.age / pop.life, 0, 1);
+      const alpha = t < 0.7 ? 1 : Math.max(0, (1 - t) / 0.3);
+      const rise = 26 * (1 - (1 - t) ** 2);
+      ctx.globalAlpha = alpha;
+      ctx.font = `700 ${pop.big ? 22 : 16}px ${MONO_FONT}`;
+      ctx.fillStyle = pop.big ? 'rgba(255, 248, 224, 0.98)' : 'rgba(255, 213, 79, 0.95)';
+      ctx.shadowColor = 'rgba(255, 207, 107, 0.7)';
+      ctx.shadowBlur = pop.big ? 14 : 8;
+      ctx.fillText(pop.text, pop.x, pop.y - rise);
     }
     ctx.restore();
   }
@@ -677,6 +701,7 @@ export function createRenderer(canvas) {
     vignette.addColorStop(1, 'rgba(0, 0, 0, 0.55)');
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
+    drawPops(state);
   }
 
   function drawWingIcon(x, y, filled) {
@@ -698,6 +723,62 @@ export function createRenderer(canvas) {
     ctx.fillStyle = filled ? '#fff3c9' : 'rgba(169, 183, 201, 0.24)';
     ctx.beginPath();
     ctx.ellipse(0, 0, 4.6, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawLanternLifeIcon(x, y, filled) {
+    ctx.save();
+    ctx.translate(x, y);
+    // The little lantern reads as a life: amber and lit while it holds, dim red once lost.
+    if (filled) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, 16);
+      glow.addColorStop(0, 'rgba(255, 226, 158, 0.6)');
+      glow.addColorStop(1, 'rgba(255, 207, 107, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.strokeStyle = filled ? 'rgba(255, 236, 196, 0.9)' : 'rgba(198, 40, 40, 0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, -14);
+    ctx.lineTo(0, -10);
+    ctx.stroke();
+    ctx.fillStyle = filled ? '#33241a' : 'rgba(28, 24, 32, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(-8, -10);
+    ctx.lineTo(0, -14);
+    ctx.lineTo(8, -10);
+    ctx.lineTo(0, -6);
+    ctx.closePath();
+    ctx.fill();
+    const glass = ctx.createLinearGradient(0, -8, 0, 9);
+    if (filled) {
+      glass.addColorStop(0, '#fff6d6');
+      glass.addColorStop(0.5, '#ffd873');
+      glass.addColorStop(1, '#e59a3c');
+    } else {
+      glass.addColorStop(0, 'rgba(198, 40, 40, 0.34)');
+      glass.addColorStop(1, 'rgba(120, 24, 28, 0.28)');
+    }
+    ctx.fillStyle = glass;
+    ctx.beginPath();
+    ctx.moveTo(-6.5, -6);
+    ctx.lineTo(6.5, -6);
+    ctx.lineTo(5, 10);
+    ctx.lineTo(-5, 10);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = filled ? 'rgba(255, 244, 214, 0.85)' : 'rgba(198, 40, 40, 0.5)';
+    ctx.stroke();
+    ctx.fillStyle = filled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(198, 40, 40, 0.4)';
+    ctx.beginPath();
+    ctx.arc(0, 1, 2.1, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -725,20 +806,34 @@ export function createRenderer(canvas) {
     ctx.save();
     roundedRect(ctx, 22, 16, W - 44, 74, 14);
     const panel = ctx.createLinearGradient(0, 16, 0, 90);
-    panel.addColorStop(0, 'rgba(7, 14, 27, 0.78)');
-    panel.addColorStop(1, 'rgba(7, 14, 27, 0.38)');
+    panel.addColorStop(0, 'rgba(7, 14, 27, 0.4)');
+    panel.addColorStop(1, 'rgba(7, 14, 27, 0.2)');
     ctx.fillStyle = panel;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(143, 240, 208, 0.13)';
+    ctx.strokeStyle = 'rgba(143, 240, 208, 0.1)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
     label(ctx, 'SCORE', 44, 38, { font: `600 12px ${MONO_FONT}`, color: C.textDim, spacing: 3 });
-    label(ctx, state.score.toLocaleString('en-US'), 44, 74, { font: `700 36px ${MONO_FONT}`, color: C.cream, glow: 10, glowColor: 'rgba(255, 207, 107, 0.45)' });
+    label(ctx, state.score.toLocaleString('en-US'), 44, 74, { font: `700 36px ${MONO_FONT}`, color: C.amber, glow: 10, glowColor: 'rgba(255, 213, 79, 0.45)' });
+    // Combo lives at the bottom centre, fading in while the chain holds and out when it breaks.
     if (state.combo > 1) {
-      const pulse = 0.8 + 0.2 * Math.sin(time * 8);
-      label(ctx, `x${state.combo}`, 232, 72, { font: `700 25px ${MONO_FONT}`, color: C.amber, alpha: pulse, glow: 12, glowColor: C.amber });
-      label(ctx, 'COMBO', 232, 87, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
+      const fade = clamp(state.comboTimer / 0.5, 0, 1);
+      const pulse = 0.86 + 0.14 * Math.sin(time * 9);
+      const cx = W / 2;
+      const cy = H - 78;
+      ctx.save();
+      ctx.globalAlpha = fade;
+      roundedRect(ctx, cx - 92, cy - 31, 184, 46, 23);
+      ctx.fillStyle = 'rgba(7, 14, 27, 0.55)';
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255, 213, 79, ${(0.3 + 0.3 * pulse).toFixed(3)})`;
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+      label(ctx, `COMBO ×${state.combo}`, cx, cy + 2, {
+        font: `700 21px ${MONO_FONT}`, color: C.amber, align: 'center', spacing: 2, glow: 12, glowColor: 'rgba(255, 213, 79, 0.55)',
+      });
+      ctx.restore();
     }
 
     label(ctx, `NIGHT ${state.night} / ${RUN.nightsToWin}`, W / 2, 40, { font: `700 15px ${MONO_FONT}`, color: C.mint, align: 'center', spacing: 3 });
@@ -748,8 +843,8 @@ export function createRenderer(canvas) {
       const progress = index === state.litCount && !lit ? state.progress / LANTERN.motesEach : 0;
       ctx.save();
       ctx.translate(x, 66);
-      ctx.strokeStyle = lit ? 'rgba(255, 207, 107, 0.95)' : 'rgba(255, 207, 107, 0.28)';
-      ctx.fillStyle = lit ? 'rgba(255, 207, 107, 0.9)' : 'rgba(255, 207, 107, 0.08)';
+      ctx.strokeStyle = lit ? 'rgba(255, 213, 79, 0.95)' : 'rgba(255, 213, 79, 0.28)';
+      ctx.fillStyle = lit ? 'rgba(255, 213, 79, 0.9)' : 'rgba(255, 213, 79, 0.08)';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       ctx.moveTo(-8, -7);
@@ -766,7 +861,7 @@ export function createRenderer(canvas) {
       if (lit) {
         ctx.shadowColor = C.amber;
         ctx.shadowBlur = 12;
-        ctx.fillStyle = '#fff3c9';
+        ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
         ctx.arc(0, 1, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -782,7 +877,7 @@ export function createRenderer(canvas) {
     label(ctx, `${state.litCount} / ${LANTERN.count} LIT`, W / 2, 87, { font: `600 10px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
 
     for (let index = 0; index < RUN.lives; index += 1) {
-      drawWingIcon(W - 196 + index * 34, 50, index < state.lives);
+      drawLanternLifeIcon(W - 196 + index * 34, 50, index < state.lives);
     }
     label(ctx, 'LIVES', W - 196, 84, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
     for (let index = 0; index < RUN.maxSparks; index += 1) {
@@ -807,7 +902,7 @@ export function createRenderer(canvas) {
     ctx.fillRect(0, 0, W, H);
   }
 
-  function drawTitle(state, best, time) {
+  function drawTitle(state, best, time, demo = false) {
     overlay(0.48);
     // Two lit lanterns frame the title; the world's decorative moth hovers below it.
     const titleY = 178;
@@ -861,10 +956,10 @@ export function createRenderer(canvas) {
     ctx.strokeStyle = `rgba(255, 207, 107, ${0.45 + 0.3 * glow})`;
     ctx.lineWidth = 1.4;
     ctx.stroke();
-    label(ctx, STRINGS.begin, W / 2, buttonY + 7, { font: `700 17px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 2, glow: 10, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, demo ? 'AUTOPILOT DEMO — THE MOTH FLIES ITSELF' : STRINGS.begin, W / 2, buttonY + 7, { font: `700 17px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 2, glow: 10, glowColor: 'rgba(255, 207, 107, 0.5)' });
 
     label(ctx, STRINGS.goal, W / 2, 604, { font: `500 17px ${BODY_FONT}`, color: 'rgba(247, 241, 220, 0.78)', align: 'center' });
-    label(ctx, STRINGS.controls, W / 2, 662, { font: `500 12px ${MONO_FONT}`, color: 'rgba(169, 183, 201, 0.72)', align: 'center', spacing: 0.5 });
+    label(ctx, demo ? 'RECORDED LIVE FROM THE GAME · AUTOPILOT ON' : STRINGS.controls, W / 2, 662, { font: `500 12px ${MONO_FONT}`, color: 'rgba(169, 183, 201, 0.72)', align: 'center', spacing: 0.5 });
     label(ctx, best > 0 ? `BEST  ${best.toLocaleString('en-US')}` : 'AN ORIGINAL ARCADE GAME', 36, H - 26, { font: `600 12px ${MONO_FONT}`, color: 'rgba(255, 207, 107, 0.75)', spacing: 2 });
     label(ctx, 'THREE NIGHTS · THREE LIVES · FOUR LANTERNS', W - 36, H - 26, { font: `600 12px ${MONO_FONT}`, color: 'rgba(169, 183, 201, 0.6)', align: 'right', spacing: 2 });
   }
@@ -916,7 +1011,7 @@ export function createRenderer(canvas) {
     void time;
   }
 
-  function drawDawnScreen(state, time) {
+  function drawDawnScreen(state, time, demo = false) {
     overlay(0.58);
     label(ctx, STRINGS.dawn, W / 2, 208, { font: `700 62px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
     label(ctx, `${STRINGS.dawnSub}  Night ${state.night + 1} waits beyond the trees.`, W / 2, 260, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
@@ -924,7 +1019,7 @@ export function createRenderer(canvas) {
     label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 390, { font: `700 52px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
     label(ctx, 'NIGHT BONUS', W / 2, 420, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
     label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 478, { font: `700 20px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
-    drawButton(STRINGS.next, 558);
+    drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 558);
     void time;
   }
 
@@ -946,14 +1041,19 @@ export function createRenderer(canvas) {
     }
     drawField(state, time, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED);
     ctx.restore();
-    if (screen === SCREEN_TITLE) drawTitle(state, best, time);
+    if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
     else if (screen === SCREEN_DAWN) {
-      drawDawnScreen(state, time);
+      drawDawnScreen(state, time, extra.demo === true);
     } else if (screen === SCREEN_OVER || screen === SCREEN_VICTORY) {
       drawEndScreen(state, screen, best, time);
     } else {
       drawHud(state, time);
       if (screen === SCREEN_PAUSED) drawPaused(state);
+    }
+    if (state.whiteFlash > 0) {
+      // A two-frame white kiss on the flare: the meadow blinks, then the ring expands.
+      ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(0.5, state.whiteFlash * 7).toFixed(3)})`;
+      ctx.fillRect(0, 0, W, H);
     }
     if (state.flash > 0) {
       ctx.fillStyle = `rgba(255, 111, 138, ${(state.flash * 0.3).toFixed(3)})`;

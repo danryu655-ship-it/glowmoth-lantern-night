@@ -70,8 +70,8 @@ export const FLARE = {
 };
 
 export const PALETTE = {
-  ink: '#050812',
-  skyTop: '#050812',
+  ink: '#0B0E14',
+  skyTop: '#0B0E14',
   skyMid: '#0a1428',
   skyLow: '#123050',
   hillFar: '#081326',
@@ -80,21 +80,21 @@ export const PALETTE = {
   meadowLow: '#071a20',
   moon: '#ffe9b8',
   moonGlow: 'rgba(255, 226, 158, 0.22)',
-  amber: '#ffcf6b',
-  amberHot: '#fff3c9',
-  mint: '#8ff0d0',
+  amber: '#FFD54F',
+  amberHot: '#FFD54F',
+  mint: '#A7F3D0',
   mintDim: '#4fae95',
-  violet: '#a98bff',
+  violet: '#4A148C',
   violetDeep: '#241a45',
   shadow: '#171029',
   coral: '#ff6f8a',
-  cream: '#fff6df',
-  text: '#f7f1dc',
+  cream: '#FFFFFF',
+  text: '#FFFFFF',
   textDim: '#a9b7c9',
   panel: 'rgba(7, 14, 27, 0.72)',
   star: '#dfeaff',
   grass: '#0a2429',
-  grassLit: '#12403f',
+  grassLit: '#A7F3D0',
 };
 
 export const STRINGS = {

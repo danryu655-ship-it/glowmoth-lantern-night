@@ -41,6 +41,8 @@ export function createWorld(seed) {
     flare: null,
     shake: 0,
     flash: 0,
+    whiteFlash: 0,
+    pops: [],
     time: 0,
     moteTimer: 0,
     hazardTimer: 1.6,
@@ -78,6 +80,8 @@ export function createWorld(seed) {
     state.flare = null;
     state.shake = 0;
     state.flash = 0;
+    state.whiteFlash = 0;
+    state.pops = [];
     state.time = 0;
     state.moteTimer = 0.2;
     state.hazardTimer = 2.2;
@@ -121,6 +125,9 @@ export function createWorld(seed) {
     state.score += MOTE.value * state.combo;
     state.progress += 1;
     state.sparkCharge += 1;
+    state.pops.push({
+      x: mote.x, y: mote.y, text: `+${MOTE.value * state.combo}`, age: 0, life: 0.85,
+    });
     burst(state, rand, mote.x, mote.y, {
       count: 9,
       colors: ['#ffcf6b', '#fff3c9', '#8ff0d0'],
@@ -150,7 +157,11 @@ export function createWorld(seed) {
       state.progress = 0;
       state.score += LANTERN.lightScore;
       state.lastEvent |= EVENT_LANTERN;
+      state.shake = Math.max(state.shake, 5);
       const spot = LANTERN.positions[state.litCount - 1];
+      state.pops.push({
+        x: spot.x, y: spot.y - 58, text: `+${LANTERN.lightScore}`, age: 0, life: 1.1, big: true,
+      });
       burst(state, rand, spot.x, spot.y - 52, {
         count: 26,
         colors: ['#ffcf6b', '#fff3c9', '#8ff0d0'],
@@ -230,6 +241,7 @@ export function createWorld(seed) {
     if (state.sparks <= 0) return false;
     state.sparks -= 1;
     state.flare = { x: state.player.x, y: state.player.y, age: 0 };
+    state.whiteFlash = 0.055;
     flareRing(state, rand, state.player.x, state.player.y);
     for (const hazard of state.hazards) {
       const dx = hazard.x - state.player.x;
@@ -262,6 +274,7 @@ export function createWorld(seed) {
     state.time += dt;
     state.shake = Math.max(0, state.shake - 34 * dt);
     state.flash = Math.max(0, state.flash - 1.8 * dt);
+    state.whiteFlash = Math.max(0, state.whiteFlash - 1.8 * dt);
     const player = state.player;
     player.invuln = Math.max(0, player.invuln - dt);
     player.flap += dt * (9 + Math.hypot(player.vx, player.vy) * 0.012);
@@ -329,6 +342,9 @@ export function createWorld(seed) {
       } else if (Math.hypot(state.dew.x - player.x, state.dew.y - player.y) < state.dew.r + MOTH.radius + 4) {
         state.lives = Math.min(RUN.lives, state.lives + 1);
         state.score += 50;
+        state.pops.push({
+          x: state.dew.x, y: state.dew.y - 26, text: '+50 LIFE', age: 0, life: 1.05, big: true,
+        });
         burst(state, rand, state.dew.x, state.dew.y, {
           count: 18,
           colors: ['#8ff0d0', '#d8fff3', '#ffcf6b'],
@@ -371,6 +387,11 @@ export function createWorld(seed) {
     }
 
     updateParticles(state, dt);
+    for (let index = state.pops.length - 1; index >= 0; index -= 1) {
+      const pop = state.pops[index];
+      pop.age += dt;
+      if (pop.age >= pop.life) state.pops.splice(index, 1);
+    }
     return state.lastEvent;
   }
 

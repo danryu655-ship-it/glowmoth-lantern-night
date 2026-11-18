@@ -4,6 +4,7 @@
 // loop; ?seed=N makes a run's patterns repeatable.
 
 import { BEST_KEY, RUN, STEP } from './config.js';
+import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import { createRenderer, SCREEN_DAWN, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY } from './render.js';
@@ -15,8 +16,9 @@ import { stageShot } from './shots.js';
 const MAX_FRAME = 0.25;
 const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
+const demo = params.has('demo');
 const seedParam = Number.parseInt(params.get('seed') ?? '', 10);
-const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() * 4294967296);
+const seed = Number.isInteger(seedParam) ? seedParam : (demo ? 11 : Math.floor(Math.random() * 4294967296));
 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
@@ -62,13 +64,17 @@ function runGame() {
   let best = readBest();
   let accumulator = 0;
   let ambientClock = 0;
+  let autoClock = 0;
   let last = performance.now();
+  // The demo runs a little faster than real time so one night plays out inside ~30 seconds.
+  const timeScale = 1;
 
-  if (params.has('debug')) {
+  if (params.has('debug') || demo) {
     window.__glowmoth = {
       get screen() { return screen; },
       get state() { return world.state; },
       world,
+      demo,
     };
   }
 
@@ -98,6 +104,7 @@ function runGame() {
   }
 
   function handleActions() {
+    if (demo) return; // The autopilot drives; the demo takes no keyboard or pointer input.
     if (input.consume('mute')) {
       const muted = audio.toggleMute();
       announce(muted ? 'Sound off.' : 'Sound on.');
@@ -164,6 +171,7 @@ function runGame() {
       if (world.state.night >= RUN.nightsToWin) finishRun(true);
       else {
         screen = SCREEN_DAWN;
+        autoClock = 0;
         audio.play('clear');
         announce(`Night ${world.state.night} survived. Bonus ${world.state.bonus}. Press Enter for the next night.`);
       }
@@ -176,17 +184,29 @@ function runGame() {
     const delta = Math.min((now - last) / 1000, MAX_FRAME);
     last = now;
     ambientClock += delta;
+    autoClock += delta;
     handleActions();
+    if (demo && screen === SCREEN_TITLE && autoClock > 1.5) {
+      autoClock = 0;
+      startRun();
+    }
     if (screen === SCREEN_TITLE) {
-      accumulator += delta;
+      accumulator += delta * timeScale;
       while (accumulator >= STEP) {
         world.step(STEP, { x: 0, y: 0 }, true);
         accumulator -= STEP;
       }
     } else if (screen === SCREEN_PLAY) {
-      accumulator += delta;
+      accumulator += delta * timeScale;
       while (accumulator >= STEP && screen === SCREEN_PLAY) {
-        const events = world.step(STEP, input.direction(world.state.player), false);
+        let direction;
+        if (demo) {
+          direction = autopilotDirection(world.state);
+          if (autopilotFlare(world.state) && world.flare()) audio.play('flare');
+        } else {
+          direction = input.direction(world.state.player);
+        }
+        const events = world.step(STEP, direction, false);
         accumulator -= STEP;
         if (events !== 0) handleEvents(events);
         if (screen !== SCREEN_PLAY) accumulator = 0;
@@ -194,7 +214,18 @@ function runGame() {
     } else {
       accumulator = 0;
     }
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0 });
+    // The demo plays one night, then rests on its dawn card long enough to read.
+    if (demo && screen === SCREEN_DAWN && autoClock > 3.2) {
+      autoClock = 0;
+      if (world.state.night >= RUN.nightsToWin) finishRun(true);
+      else {
+        world.nextNight();
+        screen = SCREEN_PLAY;
+        audio.play('start');
+        announce(`Night ${world.state.night} of ${RUN.nightsToWin}.`);
+      }
+    }
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0, demo });
     input.endFrame();
   }
 
