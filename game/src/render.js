@@ -2,7 +2,7 @@
 // nothing about the rules; it reads a world state and draws it. All art is vector and gradient
 // work on one canvas, with no image or font file anywhere.
 
-import { FIELD, LANTERN, PALETTE as C, RUN, STRINGS } from './config.js';
+import { BOSS, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, STRINGS } from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -182,8 +182,25 @@ function backgroundLayer() {
   return layer;
 }
 
+// ANDROID BUILD ONLY (v1.3.1) — character portraits drawn by the user.
+function loadImage(src) {
+  if (typeof Image === 'undefined') return null;
+  const img = new Image();
+  img.src = src;
+  return img;
+}
+
+function portraitReady(img) {
+  return img !== null && img !== undefined && img.complete && img.naturalWidth > 0;
+}
+
 export function createRenderer(canvas) {
   const ctx = canvas.getContext('2d');
+  const portraits = {
+    luma: loadImage('characters/luma.jpg'),
+    lumi: loadImage('characters/lumi.jpg'),
+    lulu: loadImage('characters/lulu.jpg'),
+  };
   const base = backgroundLayer();
 
   function resize() {
@@ -522,6 +539,183 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
+  // ANDROID BUILD ONLY (v1.3.0) — companions and the boss.
+  function drawCompanion(companion, time) {
+    const isLumi = companion.color === 'lumi';
+    const core = isLumi ? 'rgba(143, 240, 208, 0.95)' : 'rgba(142, 203, 255, 0.95)';
+    const wing = isLumi ? 'rgba(210, 255, 238, 0.85)' : 'rgba(214, 235, 255, 0.85)';
+    const flap = Math.sin(companion.flap);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const glow = ctx.createRadialGradient(companion.x, companion.y, 0, companion.x, companion.y, 26);
+    glow.addColorStop(0, core);
+    glow.addColorStop(0.4, isLumi ? 'rgba(143, 240, 208, 0.28)' : 'rgba(142, 203, 255, 0.28)');
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(companion.x, companion.y, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.save();
+    ctx.translate(companion.x, companion.y);
+    ctx.rotate(Math.sin(time * 2 + companion.phase) * 0.2);
+    for (const side of [-1, 1]) {
+      ctx.save();
+      ctx.scale(side, 1);
+      ctx.rotate(-0.3 * flap * side);
+      ctx.fillStyle = wing;
+      ctx.beginPath();
+      ctx.ellipse(5, -3, 7, 3.4, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(0, 0, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(0, 0, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function drawBoss(boss, state, time) {
+    // One HP segment per lantern left to light.
+    const hp = Math.max(0, LANTERN.count - state.litCount);
+    ctx.save();
+    ctx.translate(boss.x, boss.y + Math.sin(time * 1.4 + boss.phase) * 3);
+    const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, boss.r * 2.4);
+    aura.addColorStop(0, 'rgba(36, 26, 69, 0.55)');
+    aura.addColorStop(1, 'rgba(36, 26, 69, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(0, 0, boss.r * 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    // Body: a big jagged shadow, like a giant shade.
+    ctx.fillStyle = boss.flash > 0 ? '#3d2b5e' : '#171029';
+    ctx.beginPath();
+    const petals = 9;
+    for (let index = 0; index <= petals; index += 1) {
+      const angle = (index / petals) * Math.PI * 2;
+      const radius = boss.r * (1 + 0.1 * Math.sin(time * 3 + index * 2.3 + boss.phase));
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius * 0.82;
+      if (index === 0) ctx.moveTo(x, y);
+      else {
+        const previous = ((index - 1) / petals) * Math.PI * 2;
+        const cx = Math.cos(previous + 0.35) * radius * 1.4;
+        const cy = Math.sin(previous + 0.35) * radius * 1.4;
+        ctx.quadraticCurveTo(cx, cy, x, y);
+      }
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(169, 139, 255, 0.5)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    // Two glowing red eyes, angry.
+    ctx.fillStyle = 'rgba(255, 90, 90, 0.95)';
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(side * 19, -6, 7, 10, side * -0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(23, 16, 41, 0.95)';
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(side * 19, -4, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (boss.flash > 0) {
+      ctx.globalAlpha = boss.flash * 0.5;
+      ctx.fillStyle = '#ffd54f';
+      ctx.beginPath();
+      ctx.arc(0, 0, boss.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    // HP bar under the boss.
+    const barW = 110;
+    const barX = -barW / 2;
+    const barY = boss.r + 16;
+    ctx.fillStyle = 'rgba(7, 14, 27, 0.7)';
+    ctx.fillRect(barX - 3, barY - 3, barW + 6, 12);
+    for (let index = 0; index < LANTERN.count; index += 1) {
+      ctx.fillStyle = index < hp ? '#ff5a5a' : 'rgba(169, 183, 201, 0.25)';
+      ctx.fillRect(barX + index * (barW / LANTERN.count) + 1.5, barY, barW / LANTERN.count - 3, 6);
+    }
+    ctx.restore();
+  }
+
+  function drawBeam(state) {
+    if (!state.beam || !state.boss) return;
+    const alpha = Math.max(0, 1 - state.beam.age / 0.5);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = 'rgba(255, 213, 79, 0.9)';
+    ctx.lineWidth = 7;
+    ctx.shadowColor = 'rgba(255, 213, 79, 0.9)';
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.moveTo(state.beam.x, state.beam.y);
+    ctx.lineTo(state.boss.x, state.boss.y);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(state.beam.x, state.beam.y);
+    ctx.lineTo(state.boss.x, state.boss.y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ANDROID BUILD ONLY (v1.3.1) — circular character portrait with glow + ring.
+  function drawPortrait(img, x, y, diameter, glowRgba) {
+    const r = diameter / 2;
+    ctx.save();
+    const glow = ctx.createRadialGradient(x, y, r * 0.35, x, y, r * 1.55);
+    glow.addColorStop(0, glowRgba);
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(img, x - r, y - r, diameter, diameter);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 213, 79, 0.95)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function wrapLines(value, maxWidth, font) {
+    ctx.save();
+    ctx.font = font;
+    const words = value.split(' ');
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const trial = line ? `${line} ${word}` : word;
+      if (ctx.measureText(trial).width <= maxWidth) line = trial;
+      else {
+        lines.push(line);
+        line = word;
+      }
+    }
+    if (line) lines.push(line);
+    ctx.restore();
+    return lines;
+  }
+
   function drawMoth(player, time, options = {}) {
     const { scale = 1, alpha = 1, noFlicker = false } = options;
     const flicker = noFlicker ? 1 : player.invuln > 0 ? 0.45 + 0.55 * Math.abs(Math.sin(time * 18)) : 1;
@@ -682,6 +876,47 @@ export function createRenderer(canvas) {
 
   const FLARE_RADIUS = 255;
 
+  // ANDROID BUILD ONLY (v1.4.0) — Lulu's shield: pulsing blue bubble
+  // around the moth while it holds, expanding ring when it shatters.
+  function drawShield(state, time) {
+    const player = state.player;
+    const pulse = 0.75 + 0.25 * Math.sin(time * 5);
+    const radius = SHIELD.radius * (1 + 0.03 * Math.sin(time * 5));
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const glow = ctx.createRadialGradient(player.x, player.y, radius * 0.4, player.x, player.y, radius * 1.35);
+    glow.addColorStop(0, 'rgba(142, 203, 255, 0)');
+    glow.addColorStop(0.7, `rgba(142, 203, 255, ${(0.10 * pulse).toFixed(3)})`);
+    glow.addColorStop(1, 'rgba(142, 203, 255, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, radius * 1.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(142, 203, 255, ${(0.10 * pulse).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(216, 239, 255, ${(0.85 * pulse).toFixed(3)})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawShieldPop(state) {
+    const t = 1 - state.shieldPop / SHIELD.popLife;
+    const radius = SHIELD.radius + t * 55;
+    ctx.save();
+    ctx.strokeStyle = `rgba(142, 203, 255, ${((1 - t) * 0.9).toFixed(3)})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(state.player.x, state.player.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawField(state, time, hideMoth = false, sparse = false) {
     ctx.drawImage(base, 0, 0);
     drawFireflies(state, time);
@@ -692,8 +927,16 @@ export function createRenderer(canvas) {
       if (hazard.kind === 'shade') drawShade(hazard, time);
       else drawDart(hazard, time);
     }
+    if (state.boss) drawBoss(state.boss, state, time);
+    drawBeam(state);
     drawFlare(state);
     if (!hideMoth) drawMoth(state.player, time, { scale: 1.1 });
+    if (!hideMoth) {
+      if (state.lumi && state.lumiPos) drawCompanion(state.lumiPos, time);
+      if (state.lulu && state.luluPos) drawCompanion(state.luluPos, time);
+    }
+    if (!hideMoth && state.shield) drawShield(state, time);
+    if (!hideMoth && state.shieldPop > 0) drawShieldPop(state);
     drawParticles(state);
     const vignette = ctx.createRadialGradient(W / 2, H / 2, 240, W / 2, H / 2, 760);
     vignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
@@ -783,6 +1026,28 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
+  // ANDROID BUILD ONLY (v1.4.0) — small shield icon for the HUD.
+  function drawShieldIcon(x, y, filled) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, -11);
+    ctx.lineTo(9, -7);
+    ctx.lineTo(9, 1);
+    ctx.quadraticCurveTo(9, 8, 0, 12);
+    ctx.quadraticCurveTo(-9, 8, -9, 1);
+    ctx.lineTo(-9, -7);
+    ctx.closePath();
+    ctx.fillStyle = filled ? 'rgba(142, 203, 255, 0.95)' : 'rgba(142, 203, 255, 0.18)';
+    ctx.fill();
+    if (filled) {
+      ctx.strokeStyle = 'rgba(216, 239, 255, 0.85)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawSparkIcon(x, y, filled) {
     ctx.save();
     ctx.translate(x, y);
@@ -836,7 +1101,8 @@ export function createRenderer(canvas) {
       ctx.restore();
     }
 
-    label(ctx, `NIGHT ${state.night} / ${RUN.nightsToWin}`, W / 2, 40, { font: `700 15px ${MONO_FONT}`, color: C.mint, align: 'center', spacing: 3 });
+    const bossNight = state.night % BOSS.every === 0;
+    label(ctx, bossNight ? `NIGHT ${state.night} — BOSS` : `NIGHT ${state.night} / ${RUN.nightsToWin}`, W / 2, 40, { font: `700 15px ${MONO_FONT}`, color: bossNight ? C.coral : C.mint, align: 'center', spacing: 3 });
     for (let index = 0; index < LANTERN.count; index += 1) {
       const x = W / 2 - (LANTERN.count - 1) * 24 + index * 48;
       const lit = state.lanterns[index]?.lit ?? false;
@@ -876,16 +1142,23 @@ export function createRenderer(canvas) {
     }
     label(ctx, `${state.litCount} / ${LANTERN.count} LIT`, W / 2, 87, { font: `600 10px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
 
-    for (let index = 0; index < RUN.lives; index += 1) {
-      drawLanternLifeIcon(W - 196 + index * 34, 50, index < state.lives);
+    const maxLives = state.maxLives ?? RUN.lives;
+    for (let index = 0; index < maxLives; index += 1) {
+      drawLanternLifeIcon(W - 196 - (maxLives - RUN.lives) * 34 + index * 34, 50, index < state.lives);
     }
     label(ctx, 'LIVES', W - 196, 84, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
+    // ANDROID BUILD ONLY (v1.4.0) — Lulu's shield status.
+    if (state.lulu) {
+      drawShieldIcon(292, 50, state.shield);
+      label(ctx, 'SHIELD', 312, 42, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
+      label(ctx, state.shield ? 'AKTIF' : `${Math.ceil(state.shieldTimer)}s`, 312, 70, { font: `700 20px ${MONO_FONT}`, color: state.shield ? C.lulu : C.textDim });
+    }
     for (let index = 0; index < RUN.maxSparks; index += 1) {
       drawSparkIcon(W - 84 + index * 24, 50, index < state.sparks);
     }
     label(ctx, 'FLARE', W - 90, 84, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
 
-    label(ctx, 'WASD / ARROWS / MOUSE TO FLY   ·   SPACE / CLICK TO FLARE   ·   P PAUSE   ·   M MUTE', W / 2, H - 14, {
+    label(ctx, 'LEFT THUMB: JOYSTICK TO FLY   ·   TAP TO FLARE', W / 2, H - 14, {
       font: `500 12px ${MONO_FONT}`,
       color: 'rgba(169, 183, 201, 0.6)',
       align: 'center',
@@ -945,7 +1218,11 @@ export function createRenderer(canvas) {
     label(ctx, STRINGS.tagline, W / 2, 300, { font: `italic 500 24px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
 
     if (state !== null) {
-      drawMoth({ ...state.player, x: W / 2, y: 418, face: -Math.PI / 2, invuln: 0, flap: time * 10 }, time, { scale: 1.55, noFlicker: true });
+      if (portraitReady(portraits.luma)) {
+        drawPortrait(portraits.luma, W / 2, 405, 180, 'rgba(255, 213, 79, 0.30)');
+      } else {
+        drawMoth({ ...state.player, x: W / 2, y: 418, face: -Math.PI / 2, invuln: 0, flap: time * 10 }, time, { scale: 1.55, noFlicker: true });
+      }
     }
 
     const buttonY = 528;
@@ -1013,8 +1290,42 @@ export function createRenderer(canvas) {
 
   function drawDawnScreen(state, time, demo = false) {
     overlay(0.58);
+    // ANDROID BUILD ONLY (v1.3.1) — on the nights Lumi (3) and Lulu (6) join,
+    // their portrait takes centre stage, like the approved preview.
+    const join = state.night === 3
+      ? { img: portraits.lumi, name: 'LUMI', glow: 'rgba(143, 240, 208, 0.30)' }
+      : state.night === 6
+        ? { img: portraits.lulu, name: 'LULU', glow: 'rgba(142, 203, 255, 0.30)' }
+        : null;
+    if (join !== null && portraitReady(join.img)) {
+      const dawnStory = STRINGS.dawnStory[state.night - 1];
+      label(ctx, STRINGS.dawn, W / 2, 132, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
+      drawPortrait(join.img, W / 2, 268, 150, join.glow);
+      label(ctx, join.name.split('').join(' '), W / 2, 362, { font: `700 18px ${MONO_FONT}`, color: C.amber, align: 'center', spacing: 3 });
+      const storyLines = wrapLines(dawnStory, 920, `italic 500 21px ${TITLE_FONT}`);
+      let storyY = 402;
+      for (const line of storyLines) {
+        label(ctx, line, W / 2, storyY, { font: `italic 500 21px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
+        storyY += 30;
+      }
+      label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, 470, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
+      label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 512, { font: `700 44px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
+      label(ctx, 'NIGHT BONUS', W / 2, 540, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
+      label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 572, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
+      drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 632);
+      void time;
+      return;
+    }
     label(ctx, STRINGS.dawn, W / 2, 208, { font: `700 62px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
-    label(ctx, `${STRINGS.dawnSub}  Night ${state.night + 1} waits beyond the trees.`, W / 2, 260, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
+    // ANDROID BUILD ONLY — story line for the night just survived. After night 3
+    // (endless mode) Lumi and Lulu are free and guard the garden with Luma.
+    const dawnStory = state.night <= STRINGS.dawnStory.length
+      ? STRINGS.dawnStory[state.night - 1]
+      : `Malam ${state.night} berlalu. Luma, Lumi, dan Lulu menjaga taman bersama.`;
+    label(ctx, dawnStory, W / 2, 260, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
+    if ((state.night + 1) % BOSS.every === 0) {
+      label(ctx, `MALAM ${state.night + 1} — DARK PEKAT MENANTI`, W / 2, 296, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+    }
     label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, 330, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
     label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 390, { font: `700 52px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
     label(ctx, 'NIGHT BONUS', W / 2, 420, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });

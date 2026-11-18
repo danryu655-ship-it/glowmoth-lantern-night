@@ -69,6 +69,28 @@ export const FLARE = {
   push: 430,
 };
 
+// ANDROID BUILD ONLY (v1.4.0) — Lulu's shield.
+export const SHIELD = {
+  interval: 60,
+  radius: 46,
+  popLife: 0.45,
+};
+
+// ANDROID BUILD ONLY (v1.3.0) — companions and the boss.
+export const COMPANION = {
+  magnetRadius: 120,
+  magnetPull: 150,
+  trail: 54,
+};
+
+export const BOSS = {
+  every: 10,
+  radius: 55,
+  bonus: 1000,
+  spawnBoost: 0.55,
+  attackGap: 3.5,
+};
+
 export const PALETTE = {
   ink: '#0B0E14',
   skyTop: '#0B0E14',
@@ -86,6 +108,8 @@ export const PALETTE = {
   mintDim: '#4fae95',
   violet: '#4A148C',
   violetDeep: '#241a45',
+  lumi: '#8ff0d0',
+  lulu: '#8ecbff',
   shadow: '#171029',
   coral: '#ff6f8a',
   cream: '#FFFFFF',
@@ -102,14 +126,23 @@ export const STRINGS = {
   subtitle: 'LANTERN NIGHT',
   tagline: 'Keep the meadow alight until dawn.',
   begin: 'PRESS ENTER OR CLICK TO FLY',
-  controls: 'WASD / ARROWS / MOUSE — FLY      SPACE / CLICK — FLARE      P — PAUSE      M — MUTE',
-  goal: 'Collect golden motes to light four lanterns.  Survive three nights.',
+  controls: 'LEFT THUMB: JOYSTICK — FLY      TAP — FLARE',
+  goal: 'Lumi dan Lulu dipenjara Dark Pekat. Nyalakan 4 lampion tiap malam untuk membebaskan mereka.',
   over: 'THE NIGHT TAKES YOU',
-  overSub: 'The lanterns dim, and the meadow goes quiet.',
+  overSub: 'Lumi dan Lulu masih menunggu dalam gelap.',
   victory: 'DAWN BREAKS',
-  victorySub: 'You kept the meadow alight until morning.',
+  victorySub: 'Lumi bebas — tapi Lulu masih terjebak di kegelapan yang lebih dalam.',
   again: 'PRESS ENTER OR CLICK TO FLY AGAIN',
   dawn: 'NIGHT SURVIVED',
   dawnSub: 'The lanterns hold the dark at bay.',
+  // ANDROID BUILD ONLY — story line shown on each dawn screen (index: night - 1).
+  dawnStory: [
+    'Malam pertama berlalu. Satu lampion menyala — dari kejauhan, Lumi dan Lulu masih memanggil.',
+    'Malam kedua berlalu. Bayangan Dark Pekat semakin gelap, tapi cahaya Luma semakin terang.',
+    'Malam ketiga berlalu. Lumi bebas! Dia bergabung dengan Luma — cahayanya menarik serpihan dari kejauhan.',
+    'Malam keempat berlalu. Lumi dan Luma menjaga taman bersama.',
+    'Malam kelima berlalu. Kegelapan semakin pekat — tapi dua cahaya kini terbang bersama.',
+    'Malam keenam berlalu. Lulu bebas! Ketiga cahaya kini terbang bersama.',
+  ],
   next: 'PRESS ENTER OR CLICK FOR THE NEXT NIGHT',
 };

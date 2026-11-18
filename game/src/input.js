@@ -67,6 +67,87 @@ export function createInput(canvas) {
   });
   canvas.addEventListener('contextmenu', (event) => event.preventDefault());
 
+  // Touch (Android): floating joystick on the left half of the screen
+  // (left thumb steers, the base appears where the thumb lands), a quick tap
+  // anywhere flares, and a drag on the right half steers toward the finger
+  // like a mouse. Two fingers work at once: steer with the left thumb, tap
+  // with the right to flare.
+  const STICK_RADIUS = 56;
+  const STICK_ZONE = 0.45; // left 45% of the screen width
+  const stickBase = document.createElement('div');
+  stickBase.style.cssText = 'position:fixed;display:none;width:112px;height:112px;margin:-56px 0 0 -56px;border:2px solid rgba(255,213,79,.55);background:rgba(255,213,79,.08);border-radius:50%;pointer-events:none;z-index:10;';
+  const stickKnob = document.createElement('div');
+  stickKnob.style.cssText = 'position:fixed;display:none;width:48px;height:48px;margin:-24px 0 0 -24px;background:rgba(255,255,255,.85);border-radius:50%;pointer-events:none;z-index:11;box-shadow:0 0 12px rgba(255,213,79,.6);';
+  document.body.append(stickBase, stickKnob);
+  let stick = null; // { id, baseX, baseY, dx, dy }
+  const taps = new Map(); // touch id -> { x, y, t }
+
+  function showStick() {
+    stickBase.style.display = 'block';
+    stickKnob.style.display = 'block';
+    stickBase.style.left = `${stick.baseX}px`;
+    stickBase.style.top = `${stick.baseY}px`;
+    stickKnob.style.left = `${stick.baseX + stick.dx}px`;
+    stickKnob.style.top = `${stick.baseY + stick.dy}px`;
+  }
+
+  function hideStick() {
+    stickBase.style.display = 'none';
+    stickKnob.style.display = 'none';
+  }
+
+  canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    for (const touch of event.changedTouches) {
+      taps.set(touch.identifier, { x: touch.clientX, y: touch.clientY, t: performance.now() });
+      if (stick === null && touch.clientX < window.innerWidth * STICK_ZONE) {
+        stick = { id: touch.identifier, baseX: touch.clientX, baseY: touch.clientY, dx: 0, dy: 0 };
+        showStick();
+      } else {
+        movePointer(touch);
+      }
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchmove', (event) => {
+    event.preventDefault();
+    for (const touch of event.changedTouches) {
+      if (stick !== null && touch.identifier === stick.id) {
+        let dx = touch.clientX - stick.baseX;
+        let dy = touch.clientY - stick.baseY;
+        const dist = Math.hypot(dx, dy);
+        if (dist > STICK_RADIUS) {
+          dx = (dx / dist) * STICK_RADIUS;
+          dy = (dy / dist) * STICK_RADIUS;
+        }
+        stick.dx = dx;
+        stick.dy = dy;
+        showStick();
+      } else {
+        movePointer(touch);
+      }
+    }
+  }, { passive: false });
+  function endTouch(event) {
+    event.preventDefault();
+    for (const touch of event.changedTouches) {
+      if (stick !== null && touch.identifier === stick.id) {
+        stick = null;
+        hideStick();
+      }
+      const start = taps.get(touch.identifier);
+      if (start) {
+        const moved = Math.hypot(touch.clientX - start.x, touch.clientY - start.y);
+        if (performance.now() - start.t < 300 && moved < 24) {
+          movePointer(touch);
+          pressed.pointer = true;
+        }
+        taps.delete(touch.identifier);
+      }
+    }
+  }
+  canvas.addEventListener('touchend', endTouch, { passive: false });
+  canvas.addEventListener('touchcancel', endTouch, { passive: false });
+
   function direction(player) {
     let x = 0;
     let y = 0;
@@ -77,6 +158,14 @@ export function createInput(canvas) {
     if (x !== 0 || y !== 0) {
       const length = Math.hypot(x, y) || 1;
       return { x: x / length, y: y / length };
+    }
+    if (stick !== null) {
+      const dist = Math.hypot(stick.dx, stick.dy);
+      if (dist > 8) {
+        const strength = Math.min(1, dist / STICK_RADIUS);
+        return { x: (stick.dx / dist) * strength, y: (stick.dy / dist) * strength };
+      }
+      return { x: 0, y: 0 };
     }
     if (pointer.active && performance.now() - pointer.movedAt < 1400) {
       const dx = pointer.x - player.x;

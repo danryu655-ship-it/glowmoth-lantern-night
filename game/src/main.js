@@ -9,7 +9,7 @@ import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import { createRenderer, SCREEN_DAWN, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY } from './render.js';
 import {
-  createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SPARK,
+  createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
 } from './world.js';
 import { stageShot } from './shots.js';
 
@@ -19,6 +19,12 @@ const shot = params.get('shot');
 const demo = params.has('demo');
 const seedParam = Number.parseInt(params.get('seed') ?? '', 10);
 const seed = Number.isInteger(seedParam) ? seedParam : (demo ? 11 : Math.floor(Math.random() * 4294967296));
+
+// ANDROID BUILD ONLY — endless mode: the nights never end. After night 3 the
+// run continues (night 4, 5, ...) with the same per-night difficulty scaling
+// (faster shades/darts, denser spawns) until the moth loses all lives. The
+// competition build in the game repo still ends in victory after 3 nights.
+const ENDLESS = true;
 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
@@ -88,7 +94,9 @@ function runGame() {
     screen = SCREEN_PLAY;
     audio.unlock();
     audio.play('start');
-    announce(`Night 1 of ${RUN.nightsToWin}. ${RUN.lives} lives. Collect golden motes to light four lanterns.`);
+    announce(ENDLESS
+  ? `Night 1. ${RUN.lives} lives. Collect golden motes to light four lanterns — the nights go on as long as you can fly.`
+  : `Night 1 of ${RUN.nightsToWin}. ${RUN.lives} lives. Collect golden motes to light four lanterns.`);
   }
 
   function finishRun(victory) {
@@ -127,7 +135,7 @@ function runGame() {
         accumulator = 0;
         screen = SCREEN_PLAY;
         audio.play('start');
-        announce(`Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
       }
       return;
     }
@@ -161,6 +169,15 @@ function runGame() {
       audio.play('hit');
       announce(world.state.lives === 1 ? 'Hit. One life left.' : `Hit. ${world.state.lives} lives left.`);
     }
+    if (events & EVENT_SHIELD) {
+      if (world.state.shield) {
+        audio.play('shield');
+        announce('Lulu memberi perisai.');
+      } else {
+        audio.play('shieldBreak');
+        announce('Perisai pecah!');
+      }
+    }
     if (events & EVENT_LANTERN) audio.play('lantern');
     if (events & EVENT_DEW) {
       audio.play('dew');
@@ -168,12 +185,17 @@ function runGame() {
     }
     if (events & EVENT_SPARK) audio.play('mote', 4);
     if (events & EVENT_NIGHT) {
-      if (world.state.night >= RUN.nightsToWin) finishRun(true);
+      if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       else {
         screen = SCREEN_DAWN;
         autoClock = 0;
         audio.play('clear');
-        announce(`Night ${world.state.night} survived. Bonus ${world.state.bonus}. Press Enter for the next night.`);
+        const joined = world.state.night === 3 ? ' Lumi bergabung dengan Luma.'
+          : world.state.night === 6 ? ' Lulu bergabung dengan Luma.' : '';
+        const bossDown = world.state.bossBonus > 0 ? ` Dark Pekat kalah! Bonus bos ${world.state.bossBonus}.` : '';
+        announce(ENDLESS && world.state.night >= RUN.nightsToWin
+          ? `Three nights lit — you won! The garden glows on. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for night ${world.state.night + 1}.`
+          : `Night ${world.state.night} survived. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for the next night.`);
       }
     }
     if (events & EVENT_OVER) finishRun(false);
@@ -217,12 +239,12 @@ function runGame() {
     // The demo plays one night, then rests on its dawn card long enough to read.
     if (demo && screen === SCREEN_DAWN && autoClock > 3.2) {
       autoClock = 0;
-      if (world.state.night >= RUN.nightsToWin) finishRun(true);
+      if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       else {
         world.nextNight();
         screen = SCREEN_PLAY;
         audio.play('start');
-        announce(`Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
       }
     }
     renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0, demo });

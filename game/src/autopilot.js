@@ -35,7 +35,7 @@ export function autopilotDirection(state) {
 
   const { mote } = nearestMote(state);
   const dew = state.dew;
-  const wantDew = dew !== null && state.lives < RUN.lives
+  const wantDew = dew !== null && state.lives < (state.maxLives ?? RUN.lives)
     && Math.hypot(dew.x - player.x, dew.y - player.y) < 430;
   let targetX = FIELD.width / 2;
   let targetY = 360;

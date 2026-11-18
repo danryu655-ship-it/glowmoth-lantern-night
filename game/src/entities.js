@@ -1,7 +1,7 @@
 // The things in the meadow: the moth, golden motes, dew drops, lanterns and the two kinds of
 // shadow. Each factory returns the plain object the world advances and the renderer paints.
 
-import { FIELD, HAZARD, LANTERN, MOTE } from './config.js';
+import { BOSS, FIELD, HAZARD, LANTERN, MOTE } from './config.js';
 
 export function createMoth() {
   return {
@@ -14,6 +14,52 @@ export function createMoth() {
     trailTimer: 0,
     face: -Math.PI / 2,
   };
+}
+
+// ANDROID BUILD ONLY (v1.3.0) — companions trail the moth; the boss is a giant
+// shadow that drifts across the sky and fires darts.
+export function createCompanion(x, y, color) {
+  return { x, y, color, phase: Math.random() * Math.PI * 2, flap: 0 };
+}
+
+export function updateCompanion(companion, targetX, targetY, dt) {
+  const rate = Math.min(1, dt * 5);
+  companion.x += (targetX - companion.x) * rate;
+  companion.y += (targetY - companion.y) * rate;
+  companion.flap += dt * 14;
+}
+
+export function createBoss() {
+  return {
+    x: FIELD.width / 2,
+    y: 168,
+    r: BOSS.radius,
+    phase: 0,
+    flash: 0,
+    stun: 0,
+    vx: 0,
+    vy: 0,
+  };
+}
+
+export function spawnBossDart(state, boss, rand) {
+  const angle = Math.atan2(state.player.y - boss.y, state.player.x - boss.x);
+  state.hazards.push({
+    kind: 'dart',
+    x: boss.x,
+    y: boss.y + 30,
+    vx: 0,
+    vy: 0,
+    r: HAZARD.dart.radius,
+    speed: HAZARD.dart.speed + state.night * HAZARD.dart.speedPerNight,
+    phase: rand.angle(),
+    age: 0,
+    stun: 0,
+    mode: 'aim',
+    aim: HAZARD.dart.aimTime * 0.8,
+    angle,
+    targetAngle: angle,
+  });
 }
 
 export function resetLanterns() {
