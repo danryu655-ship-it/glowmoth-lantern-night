@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Background Button Gradient -->
+    <radialGradient id="dewBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="60%" stop-color="#0f292c" />
+      <stop offset="100%" stop-color="#020e10" />
+    </radialGradient>
+    <!-- Emerald / Cyan Rim Gradient -->
+    <linearGradient id="dewRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ccfbf1" />
+      <stop offset="30%" stop-color="#2dd4bf" />
+      <stop offset="70%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#115e59" />
+    </linearGradient>
+    <!-- Water Drop Gradient -->
+    <linearGradient id="waterGrad" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#a7f3d0" />
+      <stop offset="60%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <!-- Glow Filter -->
+    <filter id="dewGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Button Base Shadow -->
+  <circle cx="128" cy="132" r="114" fill="#000000" opacity="0.6" filter="blur(8px)" />
+
+  <!-- Outer Ring (Emerald Border) -->
+  <circle cx="128" cy="128" r="116" fill="url(#dewRim)" />
+  <circle cx="128" cy="128" r="108" fill="#052024" />
+  
+  <!-- Inner Background -->
+  <circle cx="128" cy="128" r="102" fill="url(#dewBg)" />
+
+  <!-- Night Leaf Base -->
+  <path d="M 60 178 C 80 130 140 140 200 170 C 160 200 90 205 60 178 Z" fill="#065f46" stroke="#10b981" stroke-width="3" opacity="0.85" />
+  <path d="M 68 180 Q 130 165 190 172" stroke="#34d399" stroke-width="2" fill="none" opacity="0.6" />
+
+  <!-- Sacred Dewdrop Silhouette -->
+  <g filter="url(#dewGlow)">
+    <!-- Water Drop Shape -->
+    <path d="M 128 56 C 128 56 174 116 174 148 C 174 176 153 194 128 194 C 103 194 82 176 82 148 C 82 116 128 56 128 56 Z" 
+          fill="url(#waterGrad)" opacity="0.95" />
+
+    <!-- Pure Light Reflection / Specular Highlight -->
+    <ellipse cx="112" cy="136" rx="14" ry="24" transform="rotate(-25 112 136)" fill="#ffffff" opacity="0.85" />
+    <circle cx="118" cy="108" r="5" fill="#ffffff" opacity="0.9" />
+    <circle cx="148" cy="160" r="4.5" fill="#e0f2fe" opacity="0.75" />
+  </g>
+
+  <!-- Floating Energy Sparkles around Drop -->
+  <circle cx="88" cy="100" r="3.5" fill="#a7f3d0" />
+  <circle cx="170" cy="95" r="4" fill="#a7f3d0" />
+  <circle cx="75" cy="148" r="3" fill="#67e8f9" />
+  <circle cx="184" cy="142" r="3" fill="#67e8f9" />
+
+  <!-- Glass Highlight Curve -->
+  <path d="M 40 100 A 96 96 0 0 1 216 100 A 96 70 0 0 0 40 100 Z" fill="#ffffff" opacity="0.18" />
+</svg>

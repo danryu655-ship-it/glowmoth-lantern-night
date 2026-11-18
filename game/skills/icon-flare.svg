@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Background Button Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1804" />
+      <stop offset="75%" stop-color="#0a0a0f" />
+      <stop offset="100%" stop-color="#050508" />
+    </radialGradient>
+    <!-- Gold Rim Gradient -->
+    <linearGradient id="goldRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="35%" stop-color="#eab308" />
+      <stop offset="70%" stop-color="#854d0e" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+    <!-- Flare Core Glow -->
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#fef08a" />
+      <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.9" />
+      <stop offset="85%" stop-color="#b45309" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0" />
+    </radialGradient>
+    <!-- Filter for Intense Glow -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Button Base Shadow -->
+  <circle cx="128" cy="132" r="114" fill="#000000" opacity="0.6" filter="blur(8px)" />
+
+  <!-- Outer Ring (Gold Metal Border) -->
+  <circle cx="128" cy="128" r="116" fill="url(#goldRim)" />
+  <circle cx="128" cy="128" r="108" fill="#0b0e14" />
+  
+  <!-- Inner Background -->
+  <circle cx="128" cy="128" r="102" fill="url(#bgGrad)" />
+
+  <!-- Radiating Energy Rays -->
+  <g filter="url(#glow)" opacity="0.85">
+    <!-- Diagonal Rays -->
+    <path d="M 128 36 L 134 116 L 220 128 L 134 140 L 128 220 L 122 140 L 36 128 L 122 116 Z" fill="#fef08a" />
+    <path d="M 128 50 L 132 118 L 206 128 L 132 138 L 128 206 L 124 138 L 50 128 L 124 118 Z" fill="#ffffff" />
+    
+    <path d="M 64 64 L 124 120 L 192 64 L 136 124 L 192 192 L 124 136 L 64 192 L 120 124 Z" fill="#f59e0b" opacity="0.75" />
+    <circle cx="128" cy="128" r="64" fill="url(#coreGlow)" />
+  </g>
+
+  <!-- Core Nova Burst -->
+  <circle cx="128" cy="128" r="28" fill="#ffffff" filter="url(#glow)" />
+  <circle cx="128" cy="128" r="14" fill="#ffffff" />
+
+  <!-- Sparkle Particles -->
+  <circle cx="95" cy="85" r="4" fill="#fef08a" opacity="0.9" />
+  <circle cx="168" cy="88" r="3.5" fill="#fef08a" opacity="0.9" />
+  <circle cx="82" cy="165" r="3" fill="#fde047" opacity="0.8" />
+  <circle cx="174" cy="162" r="4.5" fill="#fde047" opacity="0.9" />
+
+  <!-- Glass Highlight Curve -->
+  <path d="M 40 100 A 96 96 0 0 1 216 100 A 96 70 0 0 0 40 100 Z" fill="#ffffff" opacity="0.15" />
+</svg>

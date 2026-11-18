@@ -20,9 +20,10 @@ Canon story: docs/kronik-luminaria.md ("Kronik Luminaria", written by the user 1
 - v1.4.4 (versionCode 10, 18 Nov ~13:52): dawn cutscenes nights 3 + 6 + boss intro, 3 beats each
 - v1.4.5 (versionCode 11, 18 Nov ~14:13): Kronik Luminaria story — 2-page prologue, dawn texts nights 1-9, 5-beat cutscenes, 2-page epilogue; story screens use a dark panel; APK 11,049,954 bytes, sha256 41d24f9c…
 - v1.4.6 (versionCode 12, 18 Nov ~14:20): dawn story wrap fix (long Kronik lines ran off the screen edges); night-9 story line now shows on the boss-warning dawn screen; APK 11,050,258 bytes, sha256 a0a26e7b…
+- v1.5.0 (versionCode 13, 18 Nov ~16:25): Skill & Badge screen — display-only guide to the 4 skills (Flare Burst, Mote Magnet, Lulu's Shield, Dewdrop Vitality) with the user's own SVG icons, plus 3 earnable badges (Lumi night 3, Lulu night 6, Dark Pekat night 10, kept in localStorage); SKILL button on the title screen (tap, or K on PC); APK 11,063,745 bytes, sha256 583351d6…
 - All three install over each other (same signing certificate 2eb6e7ca…)
 
 ## Planned next
 
-- v1.5.0 (not decided yet): Quest system — rescued characters playable after completing their quest (Lumi magnet from night 1, Lulu shield from night 1)
+- v1.6.0 (not decided yet): Quest system — rescued characters playable after completing their quest (Lumi magnet from night 1, Lulu shield from night 1)
 - Deferred from the Kronik: mid-night dialogues (nights 5 + 9), boss phase 2 Enrage below 50%

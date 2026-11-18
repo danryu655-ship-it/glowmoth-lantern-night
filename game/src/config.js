@@ -8,6 +8,9 @@ export const STEP = 1 / 60;
 
 export const BEST_KEY = 'glowmoth.best.v1';
 
+// ANDROID BUILD ONLY (v1.5.0) — earned badges for the Skill screen.
+export const BADGES_KEY = 'glowmoth.badges.v1';
+
 export const MOTH = {
   radius: 15,
   accel: 2450,
@@ -76,6 +79,40 @@ export const SHIELD = {
   popLife: 0.45,
 };
 
+// ANDROID BUILD ONLY (v1.5.0) — the Skill screen: button rects on the title
+// and skill screens, and the guide content. The skills are buffs, not
+// buttons: the screen only displays them; in-game only Flare is triggered
+// (tap / Space), the rest run on their own.
+export const SKILL_BUTTON = { x: 1120, y: 24, w: 132, h: 40 };
+export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
+export const SKILL_GUIDE = [
+  {
+    id: 'flare', icon: 'icon-flare.svg', portrait: 'skillFlare', letter: 'F', name: 'FLARE BURST',
+    tag: 'AKTIF  •  LUMA', color: '#f59e0b',
+    desc: 'Ketuk di luar joystick / Spasi: ledakan cahaya radius 255 — dorong bayangan 430, stun 1,3 dtk. 1 Spark; isi ulang tiap 5 motes (maks 2).',
+  },
+  {
+    id: 'magnet', icon: 'icon-magnet.svg', portrait: 'skillMagnet', letter: 'M', name: 'MOTE MAGNET',
+    tag: 'PASIF  •  LUMI  —  MALAM 3', color: '#8ff0d0',
+    desc: 'Lumi terbang mendampingimu dan menarik motes dalam radius 120, supaya combo tetap terjaga.',
+  },
+  {
+    id: 'shield', icon: 'icon-shield.svg', portrait: 'skillShield', letter: 'S', name: "LULU'S SHIELD",
+    tag: 'PASIF  •  LULU  —  MALAM 6', color: '#8ecbff',
+    desc: 'Perisai tiap 60 detik, menahan 1 serangan utuh. Saat Lulu bergabung, hati maksimal +1.',
+  },
+  {
+    id: 'dew', icon: 'icon-dewdrop.svg', portrait: 'skillDew', letter: 'D', name: 'DEWDROP VITALITY',
+    tag: 'POWER-UP', color: '#67e8f9',
+    desc: 'Embun muncul tiap 17–25 detik: +50 poin & pulihkan 1 hati.',
+  },
+];
+export const BADGE_GUIDE = [
+  { id: 'lumi', icon: 'badge-lumi.svg', portrait: 'badgeLumi', name: 'LUMI', night: 3, color: '#8ff0d0' },
+  { id: 'lulu', icon: 'badge-lulu.svg', portrait: 'badgeLulu', name: 'LULU', night: 6, color: '#8ecbff' },
+  { id: 'pekat', icon: 'badge-pekat.svg', portrait: 'badgePekat', name: 'DARK PEKAT', night: 10, color: '#a98bff' },
+];
+
 // ANDROID BUILD ONLY (v1.3.0) — companions and the boss.
 export const COMPANION = {
   magnetRadius: 120,
@@ -126,7 +163,7 @@ export const STRINGS = {
   subtitle: 'LANTERN NIGHT',
   tagline: 'Keep the meadow alight until dawn.',
   begin: 'PRESS ENTER OR CLICK TO FLY',
-  controls: 'LEFT THUMB: JOYSTICK — FLY      TAP — FLARE',
+  controls: 'LEFT THUMB: JOYSTICK — FLY      TAP — FLARE      K — SKILL',
   goal: 'Lumi dan Lulu dipenjara Dark Pekat. Nyalakan 4 lampion tiap malam untuk membebaskan mereka.',
   over: 'THE NIGHT TAKES YOU',
   overSub: 'Lumi dan Lulu masih menunggu dalam gelap.',

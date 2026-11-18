@@ -1,14 +1,14 @@
 // Boot and the one loop. The world advances in fixed 1/60 s steps, the renderer paints what is
 // there, and one small state machine moves between title, play, paused, cutscene, dawn, game over
-// and victory. ?shot=title|play|dawn|victory|over stages a screenshot frame instead of starting
+// and victory. ?shot=title|skills|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BEST_KEY, BOSS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, PROLOGUE_KEY, RUN, STEP, STRINGS } from './config.js';
+import { BADGES_KEY, BEST_KEY, BOSS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, PROLOGUE_KEY, RUN, STEP, STRINGS, SKILL_BUTTON, BACK_BUTTON } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import {
-  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_TITLE, SCREEN_VICTORY,
+  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import {
   createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
@@ -50,12 +50,21 @@ function saveBest(value) {
   }
 }
 
+// ANDROID BUILD ONLY (v1.5.0) — earned badges for the Skill screen.
+function readBadges() {
+  try {
+    return JSON.parse(window.localStorage.getItem(BADGES_KEY) ?? '{}') || {};
+  } catch {
+    return {};
+  }
+}
+
 function runShot(name) {
   const best = readBest();
   const scene = stageShot(name, world, best);
   let painted = 0;
   function paint() {
-    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage });
+    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage, badges: readBadges() });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else {
@@ -73,6 +82,7 @@ function runGame() {
   let prologuePage = 0;
   let epiloguePage = 0;
   let best = readBest();
+  let badges = readBadges();
   let accumulator = 0;
   let ambientClock = 0;
   let autoClock = 0;
@@ -107,6 +117,17 @@ function runGame() {
       window.localStorage.setItem(key, '1');
     } catch {
       // Private windows keep the flag for this visit only.
+    }
+  }
+
+  // ANDROID BUILD ONLY (v1.5.0) — a badge is earned once and kept.
+  function awardBadge(name) {
+    if (badges[name]) return;
+    badges = { ...badges, [name]: true };
+    try {
+      window.localStorage.setItem(BADGES_KEY, JSON.stringify(badges));
+    } catch {
+      // Private windows keep the badge for this visit only.
     }
   }
 
@@ -157,7 +178,29 @@ function runGame() {
     const pause = input.consume('pause');
 
     if (screen === SCREEN_TITLE) {
+      // ANDROID BUILD ONLY (v1.5.0) — a tap on the SKILL button (or K)
+      // opens the guide; a tap anywhere else starts the run.
+      const pos = input.pointerPos();
+      const onSkillButton = pos.x >= SKILL_BUTTON.x && pos.x <= SKILL_BUTTON.x + SKILL_BUTTON.w
+        && pos.y >= SKILL_BUTTON.y && pos.y <= SKILL_BUTTON.y + SKILL_BUTTON.h;
+      if (input.consume('skills') || (pointer && onSkillButton)) {
+        screen = SCREEN_SKILLS;
+        announce('Skill & Badge. Tekan Enter untuk kembali.');
+        return;
+      }
       if (confirm || pointer) startRun();
+      return;
+    }
+    // ANDROID BUILD ONLY (v1.5.0) — the guide is display only: Enter, Esc
+    // or a tap on KEMBALI returns to the title.
+    if (screen === SCREEN_SKILLS) {
+      const pos = input.pointerPos();
+      const onBackButton = pos.x >= BACK_BUTTON.x && pos.x <= BACK_BUTTON.x + BACK_BUTTON.w
+        && pos.y >= BACK_BUTTON.y && pos.y <= BACK_BUTTON.y + BACK_BUTTON.h;
+      if (confirm || pause || (pointer && onBackButton)) {
+        screen = SCREEN_TITLE;
+        announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+      }
       return;
     }
     // ANDROID BUILD ONLY (v1.4.5) — the prologue leads into night 1; the
@@ -242,6 +285,12 @@ function runGame() {
     screen = SCREEN_DAWN;
     autoClock = 0;
     audio.play('clear');
+    // ANDROID BUILD ONLY (v1.5.0) — the night just cleared earns its badge
+    // for the Skill screen: Lumi at night 3, Lulu at night 6, Dark Pekat
+    // when the boss falls.
+    if (world.state.night === 3) awardBadge('lumi');
+    if (world.state.night === 6) awardBadge('lulu');
+    if (world.state.bossBonus > 0) awardBadge('pekat');
     const joined = world.state.night === 3 ? ' Lumi bergabung dengan Luma.'
       : world.state.night === 6 ? ' Lulu bergabung dengan Luma.' : '';
     const bossDown = world.state.bossBonus > 0 ? ` Dark Pekat kalah! Bonus bos ${world.state.bossBonus}.` : '';
@@ -382,7 +431,7 @@ function runGame() {
       autoClock = 0;
       enterDawn();
     }
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage });
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage, badges });
     input.endFrame();
   }
 

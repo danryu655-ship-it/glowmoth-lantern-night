@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Background Button Gradient -->
+    <radialGradient id="magnetBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="65%" stop-color="#062e24" />
+      <stop offset="100%" stop-color="#02140f" />
+    </radialGradient>
+    <!-- Mint Green Rim Gradient -->
+    <linearGradient id="mintRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="35%" stop-color="#34d399" />
+      <stop offset="70%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <!-- Mint Glow Filter -->
+    <filter id="mintGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Button Base Shadow -->
+  <circle cx="128" cy="132" r="114" fill="#000000" opacity="0.6" filter="blur(8px)" />
+
+  <!-- Outer Ring (Mint Metal Border) -->
+  <circle cx="128" cy="128" r="116" fill="url(#mintRim)" />
+  <circle cx="128" cy="128" r="108" fill="#05241b" />
+  
+  <!-- Inner Background -->
+  <circle cx="128" cy="128" r="102" fill="url(#magnetBg)" />
+
+  <!-- Horseshoe Magnet / Resonant Arc Motif -->
+  <g filter="url(#mintGlow)">
+    <!-- Magnet Body Arc -->
+    <path d="M 76 148 C 76 80 180 80 180 148" fill="none" stroke="#6ee7b7" stroke-width="20" stroke-linecap="round" />
+    <!-- Inner Polarity Ring -->
+    <path d="M 76 148 C 76 96 180 96 180 148" fill="none" stroke="#059669" stroke-width="6" stroke-linecap="round" />
+
+    <!-- Magnet Pole Tips (Glowing Emitters) -->
+    <circle cx="76" cy="148" r="12" fill="#a7f3d0" />
+    <circle cx="180" cy="148" r="12" fill="#a7f3d0" />
+    
+    <!-- Central Swirling Vortex Waves -->
+    <path d="M 128 88 A 40 40 0 1 0 168 128 A 28 28 0 1 0 128 156 A 16 16 0 1 0 112 140" 
+          fill="none" stroke="#34d399" stroke-width="4.5" stroke-linecap="round" opacity="0.8" />
+  </g>
+
+  <!-- Attracted Golden Motes Flying into Vortex -->
+  <!-- Center Core Mote -->
+  <circle cx="128" cy="128" r="12" fill="#fef08a" filter="url(#mintGlow)" />
+  <circle cx="128" cy="128" r="6" fill="#ffffff" />
+
+  <!-- Trailing Golden Motes with Trajectory Trails -->
+  <!-- Top Right Mote -->
+  <path d="M 188 78 Q 160 95 138 120" stroke="#facc15" stroke-width="2.5" stroke-dasharray="4,4" fill="none" opacity="0.75" />
+  <circle cx="188" cy="78" r="7" fill="#fde047" />
+  <circle cx="188" cy="78" r="3" fill="#ffffff" />
+
+  <!-- Top Left Mote -->
+  <path d="M 68 84 Q 95 100 120 122" stroke="#facc15" stroke-width="2.5" stroke-dasharray="4,4" fill="none" opacity="0.75" />
+  <circle cx="68" cy="84" r="6" fill="#fde047" />
+  <circle cx="68" cy="84" r="2.5" fill="#ffffff" />
+
+  <!-- Bottom Mote -->
+  <path d="M 128 190 Q 128 160 128 138" stroke="#facc15" stroke-width="2.5" stroke-dasharray="4,4" fill="none" opacity="0.75" />
+  <circle cx="128" cy="190" r="7" fill="#fde047" />
+  <circle cx="128" cy="190" r="3" fill="#ffffff" />
+
+  <!-- Sparkles -->
+  <circle cx="150" cy="105" r="3.5" fill="#a7f3d0" />
+  <circle cx="106" cy="150" r="3" fill="#a7f3d0" />
+
+  <!-- Glass Highlight Curve -->
+  <path d="M 40 100 A 96 96 0 0 1 216 100 A 96 70 0 0 0 40 100 Z" fill="#ffffff" opacity="0.18" />
+</svg>

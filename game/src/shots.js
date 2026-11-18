@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 
 function placeMote(x, y, phase) {
@@ -60,6 +60,12 @@ export function stageShot(name, world, best) {
     state.hazards = [];
     state.particles = [];
     return { screen: SCREEN_TITLE, best };
+  }
+
+  if (name === 'skills') {
+    state.hazards = [];
+    state.particles = [];
+    return { screen: SCREEN_SKILLS, best };
   }
 
   if (name === 'play') {

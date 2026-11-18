@@ -3,10 +3,11 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BOSS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, STRINGS,
+  BACK_BUTTON, BOSS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
+export const SCREEN_SKILLS = 'skills';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
@@ -24,6 +25,15 @@ const MONO_FONT = "'DejaVu Sans Mono', ui-monospace, monospace";
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+// ANDROID BUILD ONLY (v1.5.0) — '#rrggbb' + alpha to an rgba() string, for
+// the skill guide's per-skill glow and ring colours.
+function hexA(hex, alpha) {
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 function roundedRect(ctx, x, y, width, height, radius) {
@@ -207,6 +217,14 @@ export function createRenderer(canvas) {
     lulu: loadImage('characters/lulu.jpg'),
     darkPekat: loadImage('characters/dark-pekat.jpg'),
     titleLegends: loadImage('title-legends.jpg'),
+    // ANDROID BUILD ONLY (v1.5.0) — the user's skill icons and badges.
+    skillFlare: loadImage('skills/icon-flare.svg'),
+    skillMagnet: loadImage('skills/icon-magnet.svg'),
+    skillShield: loadImage('skills/icon-shield.svg'),
+    skillDew: loadImage('skills/icon-dewdrop.svg'),
+    badgeLumi: loadImage('skills/badge-lumi.svg'),
+    badgeLulu: loadImage('skills/badge-lulu.svg'),
+    badgePekat: loadImage('skills/badge-pekat.svg'),
   };
   const base = backgroundLayer();
 
@@ -1278,6 +1296,148 @@ export function createRenderer(canvas) {
     label(ctx, demo ? 'RECORDED LIVE FROM THE GAME · AUTOPILOT ON' : STRINGS.controls, W / 2, 662, { font: `500 12px ${MONO_FONT}`, color: 'rgba(169, 183, 201, 0.72)', align: 'center', spacing: 0.5 });
     label(ctx, best > 0 ? `BEST  ${best.toLocaleString('en-US')}` : 'AN ORIGINAL ARCADE GAME', 36, H - 26, { font: `600 12px ${MONO_FONT}`, color: 'rgba(255, 207, 107, 0.75)', spacing: 2 });
     label(ctx, 'THREE NIGHTS · THREE LIVES · FOUR LANTERNS', W - 36, H - 26, { font: `600 12px ${MONO_FONT}`, color: 'rgba(169, 183, 201, 0.6)', align: 'right', spacing: 2 });
+
+    // ANDROID BUILD ONLY (v1.5.0) — the Skill screen opens from here
+    // (tap the button, or press K). A tap anywhere else starts the run.
+    ctx.save();
+    roundedRect(ctx, SKILL_BUTTON.x, SKILL_BUTTON.y, SKILL_BUTTON.w, SKILL_BUTTON.h, 20);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    const skillCy = SKILL_BUTTON.y + SKILL_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(SKILL_BUTTON.x + 10, skillCy);
+    ctx.lineTo(SKILL_BUTTON.x + 18, skillCy - 8);
+    ctx.lineTo(SKILL_BUTTON.x + 26, skillCy);
+    ctx.lineTo(SKILL_BUTTON.x + 18, skillCy + 8);
+    ctx.closePath();
+    ctx.fillStyle = C.amber;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'SKILL', SKILL_BUTTON.x + 80, skillCy + 5, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center' });
+  }
+
+  // ANDROID BUILD ONLY (v1.5.0) — the Skill & Badge guide. Display only:
+  // the skills are buffs, nothing here is clicked except KEMBALI. Each icon
+  // is the user's own SVG; until it loads, a coloured ring + letter stands
+  // in. Badges unlock when their night is cleared (night 3 Lumi, night 6
+  // Lulu, night 10 Dark Pekat) and stay earned in localStorage.
+  function drawSkills(state, badges, time) {
+    overlay(0.58);
+    ctx.save();
+    roundedRect(ctx, 40, 28, 1200, 668, 18);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'SKILL & BADGE', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Kekuatan cahaya Luma, Lumi & Lulu', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+
+    let y = 132;
+    for (const skill of SKILL_GUIDE) {
+      const cy = y + 32;
+      const img = portraits[skill.portrait];
+      if (portraitReady(img)) {
+        drawPortrait(img, 148, cy, 64, hexA(skill.color, 0.30), hexA(skill.color, 0.95));
+      } else {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(148, cy, 32, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(12, 18, 28, 1)';
+        ctx.fill();
+        ctx.strokeStyle = skill.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+        label(ctx, skill.letter, 148, cy + 1, { font: `700 30px ${BODY_FONT}`, color: skill.color, align: 'center', baseline: 'middle' });
+      }
+      label(ctx, skill.name, 200, y + 12, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'left' });
+      ctx.save();
+      ctx.font = `700 19px ${MONO_FONT}`;
+      const nameWidth = ctx.measureText(skill.name).width;
+      ctx.restore();
+      label(ctx, `—  ${skill.tag}`, 200 + nameWidth + 14, y + 12, { font: `700 12px ${MONO_FONT}`, color: skill.color, align: 'left' });
+      const descLines = wrapLines(skill.desc, 980, `500 15px ${BODY_FONT}`);
+      let lineY = y + 40;
+      for (const line of descLines) {
+        label(ctx, line, 200, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'left' });
+        lineY += 20;
+      }
+      y += 88;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(120, 496);
+    ctx.lineTo(W - 120, 496);
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'BADGE  —  DIDAPAT SAAT MENAMATKAN MALAM', W / 2, 518, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+
+    BADGE_GUIDE.forEach((badge, index) => {
+      const cx = 440 + index * 200;
+      const cy = 572;
+      const earned = badges[badge.id] === true;
+      const img = portraits[badge.portrait];
+      if (earned && portraitReady(img)) {
+        drawPortrait(img, cx, cy, 72, hexA(badge.color, 0.30), hexA(badge.color, 0.95));
+      } else if (earned) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, 36, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(12, 18, 28, 1)';
+        ctx.fill();
+        ctx.strokeStyle = badge.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+        label(ctx, String(badge.night), cx, cy + 1, { font: `700 26px ${BODY_FONT}`, color: badge.color, align: 'center', baseline: 'middle' });
+      } else {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, 36, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(40, 48, 64, 1)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(90, 100, 120, 1)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+        label(ctx, String(badge.night), cx, cy + 1, { font: `700 26px ${BODY_FONT}`, color: 'rgba(120, 130, 150, 1)', align: 'center', baseline: 'middle' });
+      }
+      label(ctx, badge.name, cx, 624, { font: `700 13px ${MONO_FONT}`, color: earned ? C.cream : C.textDim, align: 'center', spacing: 1 });
+      label(ctx, earned ? 'DIDAPAT' : 'TERKUNCI', cx, 642, { font: `700 11px ${MONO_FONT}`, color: earned ? C.mint : C.textDim, align: 'center', spacing: 1 });
+    });
+
+    ctx.save();
+    roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+    const backCx = BACK_BUTTON.x + BACK_BUTTON.w / 2;
+    const backCy = BACK_BUTTON.y + BACK_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backCx - 38, backCy);
+    ctx.lineTo(backCx - 28, backCy - 7);
+    ctx.lineTo(backCx - 28, backCy + 7);
+    ctx.closePath();
+    ctx.fillStyle = C.cream;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    void state;
+    void time;
   }
 
   function drawButton(text, y) {
@@ -1635,6 +1795,7 @@ export function createRenderer(canvas) {
     drawField(state, time, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED);
     ctx.restore();
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
+    else if (screen === SCREEN_SKILLS) drawSkills(state, extra.badges ?? {}, time);
     else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
     else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time);
     else if (screen === SCREEN_CUTSCENE) {

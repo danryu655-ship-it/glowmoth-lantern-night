@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" width="280" height="280">
+  <defs>
+    <!-- Platinum / Ice Rim Gradient -->
+    <linearGradient id="platRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#e0f2fe" />
+      <stop offset="50%" stop-color="#7dd3fc" />
+      <stop offset="75%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#bae6fd" />
+    </linearGradient>
+    <!-- Ice Blue Glow -->
+    <radialGradient id="iceCenter" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="45%" stop-color="#0284c7" />
+      <stop offset="80%" stop-color="#0c2e55" />
+      <stop offset="100%" stop-color="#031122" />
+    </radialGradient>
+    <filter id="luluGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Shadow -->
+  <polygon points="140,20 240,75 240,195 140,250 40,195 40,75" fill="#000000" opacity="0.6" transform="translate(0, 10)" />
+
+  <!-- Platinum Hexagonal Shield Frame -->
+  <polygon points="140,20 240,75 240,195 140,250 40,195 40,75" fill="url(#platRim)" stroke="#f0f9ff" stroke-width="3.5" />
+  <polygon points="140,32 228,81 228,189 140,238 52,189 52,81" fill="#09121f" />
+  <polygon points="140,40 220,85 220,185 140,230 60,185 60,85" fill="url(#iceCenter)" />
+
+  <!-- Frost Crystals / Shield Border Elements -->
+  <g fill="#e0f2fe" opacity="0.75">
+    <polygon points="68,90 80,95 72,105" />
+    <polygon points="212,90 200,95 208,105" />
+    <polygon points="64,150 78,150 71,165" />
+    <polygon points="216,150 202,150 209,165" />
+  </g>
+
+  <!-- Central Crest: Lulu's Hexagonal Aegis Shield & Ice Wings -->
+  <g filter="url(#luluGlow)">
+    <!-- Ice Wings -->
+    <ellipse cx="105" cy="118" rx="30" ry="14" transform="rotate(-30 105 118)" fill="rgba(224, 242, 254, 0.75)" stroke="#7dd3fc" stroke-width="2.2" />
+    <ellipse cx="175" cy="118" rx="30" ry="14" transform="rotate(30 175 118)" fill="rgba(224, 242, 254, 0.75)" stroke="#7dd3fc" stroke-width="2.2" />
+
+    <!-- Lulu's Crystal Shield -->
+    <polygon points="140,76 178,98 178,142 140,166 102,142 102,98" fill="#0284c7" stroke="#e0f2fe" stroke-width="3" />
+    <!-- Inner Facets -->
+    <polygon points="140,90 166,105 166,135 140,150 114,135 114,105" fill="#38bdf8" opacity="0.85" />
+    
+    <!-- Central Sapphire Core -->
+    <circle cx="140" cy="120" r="14" fill="#ffffff" />
+    <circle cx="140" cy="120" r="7" fill="#0284c7" />
+  </g>
+
+  <!-- Banner at Bottom -->
+  <g>
+    <path d="M 55 218 L 140 202 L 225 218 L 215 242 L 140 228 L 65 242 Z" fill="#0f172a" stroke="#7dd3fc" stroke-width="2.5" />
+    <text x="140" y="224" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#7dd3fc" text-anchor="middle" letter-spacing="1.5">LULU'S VANGUARD</text>
+    <text x="140" y="236" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="8" fill="#e0f2fe" text-anchor="middle">NIGHT 6 CLEARED</text>
+  </g>
+
+  <!-- 2 Crystal Stars on Top -->
+  <g fill="#e0f2fe">
+    <polygon points="140,46 144,53 151,54 146,59 147,66 140,62 133,66 134,59 129,54 136,53" />
+    <polygon points="120,54 123,60 128,61 124,65 125,71 120,68 115,71 116,65 112,61 117,60" />
+    <polygon points="160,54 163,60 168,61 164,65 165,71 160,68 155,71 156,65 152,61 157,60" />
+  </g>
+</svg>

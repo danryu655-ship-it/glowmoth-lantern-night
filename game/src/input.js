@@ -11,7 +11,7 @@ const BLOCKED = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Spa
 
 export function createInput(canvas) {
   const keys = new Set();
-  const pressed = { confirm: false, flare: false, pause: false, mute: false, pointer: false };
+  const pressed = { confirm: false, flare: false, pause: false, mute: false, pointer: false, skills: false };
   const pointer = { x: FIELD.width / 2, y: FIELD.height / 2, active: false, movedAt: -10000 };
 
   function fieldPoint(event) {
@@ -49,6 +49,8 @@ export function createInput(canvas) {
     }
     if (event.code === 'KeyP' || event.code === 'Escape') pressed.pause = true;
     if (event.code === 'KeyM') pressed.mute = true;
+    // ANDROID BUILD ONLY (v1.5.0) — K opens the Skill screen from the title.
+    if (event.code === 'KeyK') pressed.skills = true;
   });
 
   window.addEventListener('keyup', (event) => {
@@ -191,7 +193,15 @@ export function createInput(canvas) {
     pressed.pause = false;
     pressed.mute = false;
     pressed.pointer = false;
+    pressed.skills = false;
   }
 
-  return { direction, consume, endFrame };
+  // ANDROID BUILD ONLY (v1.5.0) — the last pointer position in field units,
+  // so the title screen can tell a tap on the SKILL button from a tap
+  // anywhere else (which starts the run).
+  function pointerPos() {
+    return { x: pointer.x, y: pointer.y };
+  }
+
+  return { direction, consume, endFrame, pointerPos };
 }
