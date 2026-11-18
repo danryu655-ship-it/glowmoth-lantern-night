@@ -1568,7 +1568,13 @@ export function createRenderer(canvas) {
       label(ctx, `MALAM ${nextNight}`, W / 2, 96, { font: `700 54px ${TITLE_FONT}`, color: C.cream, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(169, 139, 255, 0.5)' });
       drawPortrait(portraits.darkPekat, W / 2, 232, 150, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
       label(ctx, 'DARK PEKAT'.split('').join(' '), W / 2, 322, { font: `700 18px ${MONO_FONT}`, color: '#a98bff', align: 'center', spacing: 3 });
-      const bossLines = wrapLines('Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.', 920, `italic 500 21px ${TITLE_FONT}`);
+      // v1.4.6: the night's own story line, not the generic hint — the hint
+      // is already in the boss cutscene (Lumi's last beat), and without this
+      // the night-9 Kronik line never appeared anywhere.
+      const bossStory = state.night <= STRINGS.dawnStory.length
+        ? STRINGS.dawnStory[state.night - 1]
+        : 'Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.';
+      const bossLines = wrapLines(bossStory, 920, `italic 500 21px ${TITLE_FONT}`);
       let bossY = 356;
       for (const line of bossLines) {
         label(ctx, line, W / 2, bossY, { font: `italic 500 21px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
@@ -1586,18 +1592,27 @@ export function createRenderer(canvas) {
     label(ctx, STRINGS.dawn, W / 2, 208, { font: `700 62px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(255, 207, 107, 0.5)' });
     // ANDROID BUILD ONLY — story line for the night just survived. After night 3
     // (endless mode) Lumi and Lulu are free and guard the garden with Luma.
+    // v1.4.6: the line is WRAPPED — the Kronik lines are long, and a single
+    // unwrapped line ran off both edges of the screen (reported 18 Nov).
+    // Everything below the story shifts down with the line count.
     const dawnStory = state.night <= STRINGS.dawnStory.length
       ? STRINGS.dawnStory[state.night - 1]
       : `Malam ${state.night} berlalu. Luma, Lumi, dan Lulu menjaga taman bersama.`;
-    label(ctx, dawnStory, W / 2, 260, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
-    if ((state.night + 1) % BOSS.every === 0) {
-      label(ctx, `MALAM ${state.night + 1} — DARK PEKAT MENANTI`, W / 2, 296, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+    const storyLines = wrapLines(dawnStory, 920, `italic 500 22px ${TITLE_FONT}`);
+    let storyY = 260;
+    for (const line of storyLines) {
+      label(ctx, line, W / 2, storyY, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
+      storyY += 30;
     }
-    label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, 330, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
-    label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 390, { font: `700 52px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
-    label(ctx, 'NIGHT BONUS', W / 2, 420, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
-    label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 478, { font: `700 20px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
-    drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 558);
+    const shift = (storyLines.length - 1) * 30;
+    if ((state.night + 1) % BOSS.every === 0) {
+      label(ctx, `MALAM ${state.night + 1} — DARK PEKAT MENANTI`, W / 2, 296 + shift, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+    }
+    label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, 330 + shift, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
+    label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, 390 + shift, { font: `700 52px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
+    label(ctx, 'NIGHT BONUS', W / 2, 420 + shift, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
+    label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 478 + shift, { font: `700 20px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
+    drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 558 + shift);
     void time;
   }
 
