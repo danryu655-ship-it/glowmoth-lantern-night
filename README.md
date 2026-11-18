@@ -4,6 +4,8 @@
 [![rank](https://make.fun/badge/best-game-01/danryu655-ship-it/glowmoth-lantern-night/rank.svg)](https://make.fun/c/best-game-01)
 [![reward](https://make.fun/badge/best-game-01/danryu655-ship-it/glowmoth-lantern-night/reward.svg)](https://make.fun/c/best-game-01)
 
+![Glowmoth logo](game/logo-glowmoth.jpg)
+
 An original arcade game for make.fun's **best-game-01**: guide a glowmoth through three
 nights of a lantern-lit garden, gathering golden motes while shadow shades and darting
 sparks try to snuff your light.
