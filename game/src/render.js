@@ -201,6 +201,7 @@ export function createRenderer(canvas) {
     lumi: loadImage('characters/lumi.jpg'),
     lulu: loadImage('characters/lulu.jpg'),
     darkPekat: loadImage('characters/dark-pekat.jpg'),
+    titleLegends: loadImage('title-legends.jpg'),
   };
   const base = backgroundLayer();
 
@@ -1195,7 +1196,21 @@ export function createRenderer(canvas) {
 
   function drawTitle(state, best, time, demo = false) {
     overlay(0.48);
+    // ANDROID BUILD ONLY (v1.4.3) — the user's GLOWMOTH LEGENDS artwork as
+    // the title background (entry screen only; the app icon logo is
+    // unchanged). When it is loaded, the big title text and the Luma
+    // portrait are skipped — both are already in the artwork.
+    const titleArt = portraitReady(portraits.titleLegends);
+    if (titleArt) {
+      ctx.drawImage(portraits.titleLegends, 0, 0, W, H);
+      const shade = ctx.createLinearGradient(0, 500, 0, H);
+      shade.addColorStop(0, 'rgba(5, 8, 14, 0)');
+      shade.addColorStop(1, 'rgba(5, 8, 14, 0.75)');
+      ctx.fillStyle = shade;
+      ctx.fillRect(0, 500, W, H - 500);
+    }
     // Two lit lanterns frame the title; the world's decorative moth hovers below it.
+    if (!titleArt) {
     const titleY = 178;
     ctx.save();
     const grad = ctx.createLinearGradient(0, titleY - 90, 0, titleY + 20);
@@ -1241,6 +1256,7 @@ export function createRenderer(canvas) {
       } else {
         drawMoth({ ...state.player, x: W / 2, y: 418, face: -Math.PI / 2, invuln: 0, flap: time * 10 }, time, { scale: 1.55, noFlicker: true });
       }
+    }
     }
 
     const buttonY = 528;
