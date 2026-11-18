@@ -200,6 +200,7 @@ export function createRenderer(canvas) {
     luma: loadImage('characters/luma.jpg'),
     lumi: loadImage('characters/lumi.jpg'),
     lulu: loadImage('characters/lulu.jpg'),
+    darkPekat: loadImage('characters/dark-pekat.jpg'),
   };
   const base = backgroundLayer();
 
@@ -593,53 +594,70 @@ export function createRenderer(canvas) {
     ctx.beginPath();
     ctx.arc(0, 0, boss.r * 2.4, 0, Math.PI * 2);
     ctx.fill();
-    // Body: a big jagged shadow, like a giant shade.
-    ctx.fillStyle = boss.flash > 0 ? '#3d2b5e' : '#171029';
-    ctx.beginPath();
-    const petals = 9;
-    for (let index = 0; index <= petals; index += 1) {
-      const angle = (index / petals) * Math.PI * 2;
-      const radius = boss.r * (1 + 0.1 * Math.sin(time * 3 + index * 2.3 + boss.phase));
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius * 0.82;
-      if (index === 0) ctx.moveTo(x, y);
-      else {
-        const previous = ((index - 1) / petals) * Math.PI * 2;
-        const cx = Math.cos(previous + 0.35) * radius * 1.4;
-        const cy = Math.sin(previous + 0.35) * radius * 1.4;
-        ctx.quadraticCurveTo(cx, cy, x, y);
+    // ANDROID BUILD ONLY (v1.4.2) — the user's Dark Pekat artwork in a
+    // circle, like the character portraits (Ø220, as in the approved
+    // preview). The vector shadow below stays as the fallback until the
+    // image loads. Hitbox and behaviour are unchanged.
+    const bossPortrait = portraitReady(portraits.darkPekat);
+    if (bossPortrait) {
+      drawPortrait(portraits.darkPekat, 0, 0, 220, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
+      if (boss.flash > 0) {
+        ctx.globalAlpha = boss.flash * 0.5;
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath();
+        ctx.arc(0, 0, 110, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    } else {
+      // Body: a big jagged shadow, like a giant shade.
+      ctx.fillStyle = boss.flash > 0 ? '#3d2b5e' : '#171029';
+      ctx.beginPath();
+      const petals = 9;
+      for (let index = 0; index <= petals; index += 1) {
+        const angle = (index / petals) * Math.PI * 2;
+        const radius = boss.r * (1 + 0.1 * Math.sin(time * 3 + index * 2.3 + boss.phase));
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius * 0.82;
+        if (index === 0) ctx.moveTo(x, y);
+        else {
+          const previous = ((index - 1) / petals) * Math.PI * 2;
+          const cx = Math.cos(previous + 0.35) * radius * 1.4;
+          const cy = Math.sin(previous + 0.35) * radius * 1.4;
+          ctx.quadraticCurveTo(cx, cy, x, y);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(169, 139, 255, 0.5)';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      // Two glowing red eyes, angry.
+      ctx.fillStyle = 'rgba(255, 90, 90, 0.95)';
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(side * 19, -6, 7, 10, side * -0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = 'rgba(23, 16, 41, 0.95)';
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.arc(side * 19, -4, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (boss.flash > 0) {
+        ctx.globalAlpha = boss.flash * 0.5;
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath();
+        ctx.arc(0, 0, boss.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
       }
     }
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(169, 139, 255, 0.5)';
-    ctx.lineWidth = 1.6;
-    ctx.stroke();
-    // Two glowing red eyes, angry.
-    ctx.fillStyle = 'rgba(255, 90, 90, 0.95)';
-    for (const side of [-1, 1]) {
-      ctx.beginPath();
-      ctx.ellipse(side * 19, -6, 7, 10, side * -0.3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = 'rgba(23, 16, 41, 0.95)';
-    for (const side of [-1, 1]) {
-      ctx.beginPath();
-      ctx.arc(side * 19, -4, 2.6, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    if (boss.flash > 0) {
-      ctx.globalAlpha = boss.flash * 0.5;
-      ctx.fillStyle = '#ffd54f';
-      ctx.beginPath();
-      ctx.arc(0, 0, boss.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-    // HP bar under the boss.
+    // HP bar under the boss (below the portrait when it is shown).
     const barW = 110;
     const barX = -barW / 2;
-    const barY = boss.r + 16;
+    const barY = (bossPortrait ? 110 : boss.r) + 16;
     ctx.fillStyle = 'rgba(7, 14, 27, 0.7)';
     ctx.fillRect(barX - 3, barY - 3, barW + 6, 12);
     for (let index = 0; index < LANTERN.count; index += 1) {
@@ -673,7 +691,7 @@ export function createRenderer(canvas) {
   }
 
   // ANDROID BUILD ONLY (v1.3.1) — circular character portrait with glow + ring.
-  function drawPortrait(img, x, y, diameter, glowRgba) {
+  function drawPortrait(img, x, y, diameter, glowRgba, ringRgba = 'rgba(255, 213, 79, 0.95)') {
     const r = diameter / 2;
     ctx.save();
     const glow = ctx.createRadialGradient(x, y, r * 0.35, x, y, r * 1.55);
@@ -691,7 +709,7 @@ export function createRenderer(canvas) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 213, 79, 0.95)';
+    ctx.strokeStyle = ringRgba;
     ctx.lineWidth = 4;
     ctx.stroke();
     ctx.restore();
@@ -1313,6 +1331,28 @@ export function createRenderer(canvas) {
       label(ctx, 'NIGHT BONUS', W / 2, 540, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
       label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, 572, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
       drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, 632);
+      void time;
+      return;
+    }
+    // ANDROID BUILD ONLY (v1.4.2) — the night before a boss night, Dark
+    // Pekat's portrait warns the player, like the approved preview.
+    const nextNight = state.night + 1;
+    if (nextNight % BOSS.every === 0 && portraitReady(portraits.darkPekat)) {
+      label(ctx, `MALAM ${nextNight}`, W / 2, 96, { font: `700 54px ${TITLE_FONT}`, color: C.cream, align: 'center', spacing: 6, glow: 26, glowColor: 'rgba(169, 139, 255, 0.5)' });
+      drawPortrait(portraits.darkPekat, W / 2, 232, 150, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
+      label(ctx, 'DARK PEKAT'.split('').join(' '), W / 2, 322, { font: `700 18px ${MONO_FONT}`, color: '#a98bff', align: 'center', spacing: 3 });
+      const bossLines = wrapLines('Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.', 920, `italic 500 21px ${TITLE_FONT}`);
+      let bossY = 356;
+      for (const line of bossLines) {
+        label(ctx, line, W / 2, bossY, { font: `italic 500 21px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.9)', align: 'center' });
+        bossY += 30;
+      }
+      label(ctx, `MALAM ${nextNight} — DARK PEKAT MENANTI`, W / 2, bossY + 14, { font: `700 16px ${MONO_FONT}`, color: C.coral, align: 'center', spacing: 3 });
+      label(ctx, `NIGHT ${state.night} COMPLETE`, W / 2, bossY + 48, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 4 });
+      label(ctx, `+${state.bonus.toLocaleString('en-US')}`, W / 2, bossY + 90, { font: `700 44px ${MONO_FONT}`, color: C.mint, align: 'center', glow: 16, glowColor: 'rgba(143, 240, 208, 0.5)' });
+      label(ctx, 'NIGHT BONUS', W / 2, bossY + 118, { font: `600 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
+      label(ctx, `SCORE  ${state.score.toLocaleString('en-US')}`, W / 2, bossY + 150, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1.5 });
+      drawButton(demo ? 'THE MOTH FLIES ON…' : STRINGS.next, bossY + 210);
       void time;
       return;
     }
