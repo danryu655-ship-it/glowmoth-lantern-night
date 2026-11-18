@@ -827,12 +827,44 @@ export function createRenderer(canvas) {
     if (portraitReady(img)) {
       drawPortrait(img, 0, 0, 64, 'rgba(192, 132, 252, 0.30)', 'rgba(216, 180, 254, 0.95)');
     } else {
+      // ANDROID BUILD ONLY (v1.6.0) — while the SVG is still loading, draw
+      // a simple vector scorpion so the hazard never reads as an empty
+      // disc (caught on a cold-cache load in the browser re-check).
       ctx.fillStyle = 'rgba(23, 16, 41, 0.95)';
       ctx.beginPath();
       ctx.arc(0, 0, 22, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = 'rgba(192, 132, 252, 0.8)';
       ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(192, 132, 252, 0.9)';
+      ctx.beginPath();
+      ctx.ellipse(0, 5, 9, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, -3, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(-2, -4, 1.4, 0, Math.PI * 2);
+      ctx.arc(2, -4, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(6, 2);
+      ctx.quadraticCurveTo(14, -8, 10, -16);
+      ctx.stroke();
+      ctx.fillStyle = '#f472b6';
+      ctx.beginPath();
+      ctx.arc(10, -17, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(192, 132, 252, 0.9)';
+      ctx.beginPath();
+      ctx.moveTo(-8, 4);
+      ctx.lineTo(-15, -2);
+      ctx.moveTo(8, 4);
+      ctx.lineTo(15, -2);
       ctx.stroke();
     }
     ctx.restore();
@@ -1646,18 +1678,20 @@ export function createRenderer(canvas) {
         label(ctx, scene.title, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
       }
       // ANDROID BUILD ONLY (v1.6.0) — the hint sat exactly on the card's
-      // dialogue-box edge (y 690) and read as cut off. It now rides inside
-      // the box's lower padding (dialogue text ends at 638, box ends at
-      // 690) on a dark chip so it reads over any card.
+      // dialogue-box edge (y 690) and read as cut off; the first fix put
+      // it inside the box, but the dialogue's second line sits at y 663
+      // (the SVG splits the text into 2 lines via tspans, dy 25) and the
+      // chip covered it. It now rides in the strip below the box (box
+      // ends 690, field ends 720) as a docked bar on a dark chip.
       ctx.save();
-      roundedRect(ctx, W / 2 - 120, 656, 240, 28, 14);
+      roundedRect(ctx, W / 2 - 110, 698, 220, 22, 11);
       ctx.fillStyle = 'rgba(7, 14, 27, 0.6)';
       ctx.fill();
       ctx.strokeStyle = 'rgba(247, 241, 220, 0.25)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
       ctx.restore();
-      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 672, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 712, { font: `700 13px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
       return;
     }
     const speakers = {
@@ -1830,17 +1864,18 @@ export function createRenderer(canvas) {
         overlay(0.58);
         label(ctx, STRINGS.epilogueTitle, W / 2, 300, { font: `700 54px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 6 });
       }
-      // ANDROID BUILD ONLY (v1.6.0) — same chip as the cutscene cards:
-      // the hint sat on the dialogue-box edge (y 690) and read as cut off.
+      // ANDROID BUILD ONLY (v1.6.0) — same docked bar as the cutscene
+      // cards (see above): the dialogue's second line sits at y 663, so
+      // the chip must stay out of the box entirely.
       ctx.save();
-      roundedRect(ctx, W / 2 - 120, 656, 240, 28, 14);
+      roundedRect(ctx, W / 2 - 110, 698, 220, 22, 11);
       ctx.fillStyle = 'rgba(7, 14, 27, 0.6)';
       ctx.fill();
       ctx.strokeStyle = 'rgba(247, 241, 220, 0.25)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
       ctx.restore();
-      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 672, { font: `700 14px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
+      label(ctx, 'KETUK UNTUK LANJUT', W / 2, 712, { font: `700 13px ${MONO_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center', spacing: 2 });
       return;
     }
     const pages = [STRINGS.epilogue.slice(0, 2), STRINGS.epilogue.slice(2)];
