@@ -1,13 +1,15 @@
 // Boot and the one loop. The world advances in fixed 1/60 s steps, the renderer paints what is
-// there, and one small state machine moves between title, play, paused, dawn, game over and
-// victory. ?shot=title|play|dawn|victory|over stages a screenshot frame instead of starting the
-// loop; ?seed=N makes a run's patterns repeatable.
+// there, and one small state machine moves between title, play, paused, cutscene, dawn, game over
+// and victory. ?shot=title|play|dawn|victory|over stages a screenshot frame instead of starting
+// the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BEST_KEY, RUN, STEP } from './config.js';
+import { BEST_KEY, BOSS, CUTSCENE, CUTSCENES, RUN, STEP } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
-import { createRenderer, SCREEN_DAWN, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY } from './render.js';
+import {
+  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY,
+} from './render.js';
 import {
   createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
 } from './world.js';
@@ -53,7 +55,7 @@ function runShot(name) {
   const scene = stageShot(name, world, best);
   let painted = 0;
   function paint() {
-    renderer.draw(world.state, scene.screen, scene.best);
+    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else {
@@ -67,6 +69,7 @@ function runShot(name) {
 function runGame() {
   const input = createInput(canvas);
   let screen = SCREEN_TITLE;
+  let cutscene = null;
   let best = readBest();
   let accumulator = 0;
   let ambientClock = 0;
@@ -129,13 +132,27 @@ function runGame() {
       if (confirm || pointer) startRun();
       return;
     }
+    // ANDROID BUILD ONLY (v1.4.4) — a tap or Enter skips one cutscene beat.
+    if (screen === SCREEN_CUTSCENE) {
+      if (confirm || pointer) advanceCutscene();
+      return;
+    }
     if (screen === SCREEN_DAWN) {
       if (confirm || pointer) {
         world.nextNight();
         accumulator = 0;
-        screen = SCREEN_PLAY;
-        audio.play('start');
-        announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        // ANDROID BUILD ONLY (v1.4.4) — a boss night opens with its intro
+        // cutscene instead of jumping straight into the fight.
+        if (ENDLESS && world.state.night % BOSS.every === 0) {
+          cutscene = { night: world.state.night, boss: true, beat: 0, beatTime: 0 };
+          screen = SCREEN_CUTSCENE;
+          audio.play('clear');
+          announce(CUTSCENES.boss.beats[0].text);
+        } else {
+          screen = SCREEN_PLAY;
+          audio.play('start');
+          announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        }
       }
       return;
     }
@@ -164,6 +181,43 @@ function runGame() {
     }
   }
 
+  // ANDROID BUILD ONLY (v1.4.4) — the dawn card, shared by the night-clear
+  // path and by the cutscene's last beat.
+  function enterDawn() {
+    screen = SCREEN_DAWN;
+    autoClock = 0;
+    audio.play('clear');
+    const joined = world.state.night === 3 ? ' Lumi bergabung dengan Luma.'
+      : world.state.night === 6 ? ' Lulu bergabung dengan Luma.' : '';
+    const bossDown = world.state.bossBonus > 0 ? ` Dark Pekat kalah! Bonus bos ${world.state.bossBonus}.` : '';
+    announce(ENDLESS && world.state.night >= RUN.nightsToWin
+      ? `Three nights lit — you won! The garden glows on. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for night ${world.state.night + 1}.`
+      : `Night ${world.state.night} survived. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for the next night.`);
+  }
+
+  // ANDROID BUILD ONLY (v1.4.4) — one cutscene beat forward; after the last
+  // beat the dawn card takes over.
+  function advanceCutscene() {
+    if (!cutscene) return;
+    const beats = cutscene.boss ? CUTSCENES.boss.beats : CUTSCENES[cutscene.night].beats;
+    cutscene.beat += 1;
+    cutscene.beatTime = 0;
+    if (cutscene.beat >= beats.length) {
+      const wasBoss = cutscene.boss;
+      cutscene = null;
+      // A boss intro ends in the fight; a dawn cutscene ends in the dawn card.
+      if (wasBoss) {
+        screen = SCREEN_PLAY;
+        audio.play('start');
+        announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
+      } else {
+        enterDawn();
+      }
+    } else {
+      announce(beats[cutscene.beat].text);
+    }
+  }
+
   function handleEvents(events) {
     if (events & EVENT_HIT) {
       audio.play('hit');
@@ -186,16 +240,16 @@ function runGame() {
     if (events & EVENT_SPARK) audio.play('mote', 4);
     if (events & EVENT_NIGHT) {
       if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
-      else {
-        screen = SCREEN_DAWN;
+      // ANDROID BUILD ONLY (v1.4.4) — after night 3 (Lumi freed) and night 6
+      // (Lulu freed) the dawn cutscene plays before the dawn card.
+      else if (ENDLESS && CUTSCENES[world.state.night]) {
+        cutscene = { night: world.state.night, beat: 0, beatTime: 0 };
+        screen = SCREEN_CUTSCENE;
         autoClock = 0;
         audio.play('clear');
-        const joined = world.state.night === 3 ? ' Lumi bergabung dengan Luma.'
-          : world.state.night === 6 ? ' Lulu bergabung dengan Luma.' : '';
-        const bossDown = world.state.bossBonus > 0 ? ` Dark Pekat kalah! Bonus bos ${world.state.bossBonus}.` : '';
-        announce(ENDLESS && world.state.night >= RUN.nightsToWin
-          ? `Three nights lit — you won! The garden glows on. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for night ${world.state.night + 1}.`
-          : `Night ${world.state.night} survived. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for the next night.`);
+        announce(CUTSCENES[world.state.night].beats[0].text);
+      } else {
+        enterDawn();
       }
     }
     if (events & EVENT_OVER) finishRun(false);
@@ -208,6 +262,11 @@ function runGame() {
     ambientClock += delta;
     autoClock += delta;
     handleActions();
+    // ANDROID BUILD ONLY (v1.4.4) — cutscene beats advance on their own.
+    if (screen === SCREEN_CUTSCENE && cutscene) {
+      cutscene.beatTime += delta;
+      if (cutscene.beatTime >= CUTSCENE.beatSeconds) advanceCutscene();
+    }
     if (demo && screen === SCREEN_TITLE && autoClock > 1.5) {
       autoClock = 0;
       startRun();
@@ -242,12 +301,19 @@ function runGame() {
       if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       else {
         world.nextNight();
-        screen = SCREEN_PLAY;
-        audio.play('start');
-        announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        if (ENDLESS && world.state.night % BOSS.every === 0) {
+          cutscene = { night: world.state.night, boss: true, beat: 0, beatTime: 0 };
+          screen = SCREEN_CUTSCENE;
+          audio.play('clear');
+          announce(CUTSCENES.boss.beats[0].text);
+        } else {
+          screen = SCREEN_PLAY;
+          audio.play('start');
+          announce(ENDLESS ? `Night ${world.state.night}.` : `Night ${world.state.night} of ${RUN.nightsToWin}.`);
+        }
       }
     }
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0, demo });
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_OVER || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene });
     input.endFrame();
   }
 

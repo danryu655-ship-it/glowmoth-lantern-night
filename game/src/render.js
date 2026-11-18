@@ -1,13 +1,16 @@
-// The painter: a cached night meadow, the living things, the HUD and the four screens. It knows
+// The painter: a cached night meadow, the living things, the HUD and the screens. It knows
 // nothing about the rules; it reads a world state and draws it. All art is vector and gradient
 // work on one canvas, with no image or font file anywhere.
 
-import { BOSS, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, STRINGS } from './config.js';
+import {
+  BOSS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, STRINGS,
+} from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
+export const SCREEN_CUTSCENE = 'cutscene';
 export const SCREEN_OVER = 'over';
 export const SCREEN_VICTORY = 'victory';
 
@@ -1322,6 +1325,127 @@ export function createRenderer(canvas) {
     void time;
   }
 
+  // ANDROID BUILD ONLY (v1.4.4) — dawn cutscene: the freed companion thanks
+  // Luma in a short dialogue before the dawn card. The moths fly above the
+  // speech bubble; the speaker's portrait sits at the bubble's left. If a
+  // portrait image is missing, a glowing initial stands in for it.
+  function drawCutsceneScreen(state, cutscene, time) {
+    const scene = cutscene && cutscene.boss ? CUTSCENES.boss
+      : cutscene && CUTSCENES[cutscene.night] ? CUTSCENES[cutscene.night] : CUTSCENES[3];
+    const beats = scene.beats;
+    const beat = cutscene ? Math.min(cutscene.beat, beats.length - 1) : 0;
+    const line = beats[beat];
+    const speakers = {
+      luma: { name: 'LUMA', color: C.amber, img: portraits.luma, glow: 'rgba(255, 213, 79, 0.30)' },
+      lumi: { name: 'LUMI', color: C.lumi, img: portraits.lumi, glow: 'rgba(143, 240, 208, 0.30)' },
+      lulu: { name: 'LULU', color: C.lulu, img: portraits.lulu, glow: 'rgba(142, 203, 255, 0.30)' },
+      darkPekat: { name: 'DARK PEKAT', color: '#a98bff', img: portraits.darkPekat, glow: 'rgba(128, 60, 220, 0.30)' },
+    };
+    const speaker = speakers[line.who] || speakers.luma;
+    const isBoss = !!(cutscene && cutscene.boss);
+    overlay(0.58);
+    label(ctx, scene.title, W / 2, 92, { font: `700 54px ${TITLE_FONT}`, color: isBoss ? '#a98bff' : C.amber, align: 'center', spacing: 6, glow: 26, glowColor: isBoss ? 'rgba(169, 139, 255, 0.5)' : 'rgba(255, 207, 107, 0.5)' });
+    // ANDROID BUILD ONLY (v1.4.4) — boss intro: Dark Pekat looms above while
+    // the three moths face it from below.
+    if (isBoss) {
+      if (portraitReady(portraits.darkPekat)) {
+        drawPortrait(portraits.darkPekat, W / 2, 218, 170, 'rgba(128, 60, 220, 0.30)', 'rgba(169, 139, 255, 0.95)');
+      } else {
+        ctx.save();
+        const glow = ctx.createRadialGradient(W / 2, 218, 20, W / 2, 218, 130);
+        glow.addColorStop(0, 'rgba(128, 60, 220, 0.30)');
+        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(W / 2, 218, 130, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(W / 2, 218, 85, 0, Math.PI * 2);
+        ctx.fillStyle = '#241a45';
+        ctx.fill();
+        ctx.restore();
+        label(ctx, 'D', W / 2, 234, { font: `700 64px ${TITLE_FONT}`, color: '#a98bff', align: 'center' });
+      }
+    }
+    // The freed friends fly with Luma above the bubble.
+    const mothY = isBoss ? 356 : 268;
+    const flyers = isBoss
+      ? [
+        { kind: 'luma', x: 480 },
+        { kind: 'lumi', x: 640 },
+        { kind: 'lulu', x: 800 },
+      ]
+      : cutscene && cutscene.night === 6
+        ? [
+          { kind: 'luma', x: 480 },
+          { kind: 'lumi', x: 640 },
+          { kind: 'lulu', x: 800 },
+        ]
+        : [
+          { kind: 'luma', x: 560 },
+          { kind: 'lumi', x: 720 },
+        ];
+    for (const [index, flyer] of flyers.entries()) {
+      const bob = Math.sin(time * 2 + index * 1.7) * 12;
+      if (flyer.kind === 'luma') {
+        drawMoth({ ...state.player, x: flyer.x, y: mothY + bob, face: -Math.PI / 2, invuln: 0, flap: time * 10 }, time, { scale: 1.35, noFlicker: true });
+      } else {
+        drawCompanion({ x: flyer.x, y: mothY + bob, color: flyer.kind, flap: time * 10 }, time);
+      }
+    }
+    // Speech bubble: portrait left, name + wrapped text right.
+    const bubbleX = 190;
+    const bubbleY = 420;
+    const bubbleW = 900;
+    const bubbleH = 160;
+    ctx.save();
+    roundedRect(ctx, bubbleX, bubbleY, bubbleW, bubbleH, 22);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = speaker.color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    const portraitX = bubbleX + 78;
+    const portraitY = bubbleY + bubbleH / 2;
+    if (portraitReady(speaker.img)) {
+      drawPortrait(speaker.img, portraitX, portraitY, 110, speaker.glow, speaker.color);
+    } else {
+      ctx.save();
+      const glow = ctx.createRadialGradient(portraitX, portraitY, 10, portraitX, portraitY, 80);
+      glow.addColorStop(0, speaker.glow);
+      glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(portraitX, portraitY, 80, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(portraitX, portraitY, 55, 0, Math.PI * 2);
+      ctx.fillStyle = speaker.color;
+      ctx.fill();
+      ctx.restore();
+      label(ctx, speaker.name[0], portraitX, portraitY + 16, { font: `700 44px ${TITLE_FONT}`, color: C.ink, align: 'center' });
+    }
+    label(ctx, speaker.name.split('').join(' '), bubbleX + 158, bubbleY + 42, { font: `700 18px ${MONO_FONT}`, color: speaker.color, spacing: 3 });
+    const textLines = wrapLines(line.text, 660, `italic 500 21px ${TITLE_FONT}`);
+    let textY = bubbleY + 82;
+    for (const textLine of textLines) {
+      label(ctx, textLine, bubbleX + 158, textY, { font: `italic 500 21px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.95)' });
+      textY += 30;
+    }
+    // Beat dots + tap hint.
+    for (let index = 0; index < beats.length; index += 1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(W / 2 + (index - (beats.length - 1) / 2) * 28, 622, index === beat ? 7 : 5, 0, Math.PI * 2);
+      ctx.fillStyle = index === beat ? C.amber : 'rgba(169, 183, 201, 0.5)';
+      ctx.fill();
+      ctx.restore();
+    }
+    label(ctx, 'KETUK UNTUK LANJUT', W / 2, 662, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 3 });
+    void time;
+  }
+
   function drawDawnScreen(state, time, demo = false) {
     overlay(0.58);
     // ANDROID BUILD ONLY (v1.3.1) — on the nights Lumi (3) and Lulu (6) join,
@@ -1409,7 +1533,10 @@ export function createRenderer(canvas) {
     drawField(state, time, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED, screen !== SCREEN_PLAY && screen !== SCREEN_PAUSED);
     ctx.restore();
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
-    else if (screen === SCREEN_DAWN) {
+    else if (screen === SCREEN_CUTSCENE) {
+      if (extra.cutscene) drawCutsceneScreen(state, extra.cutscene, time);
+      else drawDawnScreen(state, time, extra.demo === true);
+    } else if (screen === SCREEN_DAWN) {
       drawDawnScreen(state, time, extra.demo === true);
     } else if (screen === SCREEN_OVER || screen === SCREEN_VICTORY) {
       drawEndScreen(state, screen, best, time);

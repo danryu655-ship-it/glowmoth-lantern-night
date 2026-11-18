@@ -1,10 +1,13 @@
-// The four staged frames behind ?shot=title|play|dawn|victory|over. Each scene is the real world
-// object filled with a hand-placed state and the real renderer, not a mock-up: the same code that
-// draws a live game paints these frames, so the screenshots show the game's own art and HUD.
+// The staged frames behind ?shot=title|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss.
+// the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
+// same code that draws a live game paints these frames, so the screenshots show the game's own
+// art and HUD.
 
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
-import { SCREEN_DAWN, SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY } from './render.js';
+import {
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY,
+} from './render.js';
 
 function placeMote(x, y, phase) {
   return { x, y, vx: 0, vy: 0, phase, age: 2.2, life: 16, r: 11, alive: true };
@@ -99,6 +102,53 @@ export function stageShot(name, world, best) {
     state.player.invuln = 1.2;
     state.particles = [];
     return { screen: SCREEN_DAWN, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.4.4) — dawn cutscene frames: night 3 (Lumi freed,
+  // Luma + Lumi) and night 6 (Lulu freed, all three together).
+  if (name === 'cutscene3' || name === 'cutscene6') {
+    const night = name === 'cutscene3' ? 3 : 6;
+    state.night = night;
+    state.score = night === 3 ? 2100 : 5200;
+    state.bonus = 450;
+    state.lives = night === 3 ? 3 : 4;
+    state.progress = 0;
+    state.motesCollected = night === 3 ? 48 : 96;
+    state.lumi = true;
+    state.lumiPos = { x: 700, y: 300, color: 'lumi', flap: 2 };
+    if (night === 6) {
+      state.lulu = true;
+      state.luluPos = { x: 800, y: 300, color: 'lulu', flap: 2 };
+    }
+    lightLanterns(state, 4);
+    state.motes = [placeMote(368, 226, 0.8), placeMote(884, 186, 2.2)];
+    state.hazards = [];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_CUTSCENE, best, cutscene: { night, beat: 0, beatTime: 0 } };
+  }
+
+  // ANDROID BUILD ONLY (v1.4.4) — boss intro frame: night 10, Dark Pekat
+  // looms above the three moths.
+  if (name === 'cutsceneBoss') {
+    state.night = 10;
+    state.score = 8400;
+    state.bonus = 450;
+    state.lives = 4;
+    state.progress = 0;
+    state.motesCollected = 160;
+    state.lumi = true;
+    state.lumiPos = { x: 700, y: 300, color: 'lumi', flap: 2 };
+    state.lulu = true;
+    state.luluPos = { x: 800, y: 300, color: 'lulu', flap: 2 };
+    lightLanterns(state, 4);
+    state.motes = [placeMote(368, 226, 0.8), placeMote(884, 186, 2.2)];
+    state.hazards = [];
+    state.dew = null;
+    state.player.invuln = 1.2;
+    state.particles = [];
+    return { screen: SCREEN_CUTSCENE, best, cutscene: { night: 10, boss: true, beat: 0, beatTime: 0 } };
   }
 
   if (name === 'victory') {

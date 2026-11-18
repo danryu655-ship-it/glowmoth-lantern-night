@@ -146,3 +146,39 @@ export const STRINGS = {
   ],
   next: 'PRESS ENTER OR CLICK FOR THE NEXT NIGHT',
 };
+
+// ANDROID BUILD ONLY (v1.4.4) — dawn cutscenes: short dialogue scenes that
+// play on the dawn screen after night 3 (Lumi freed) and night 6 (Lulu
+// freed), before the dawn card. Tap/Enter skips a beat; beats also advance
+// on their own after beatSeconds.
+export const CUTSCENE = {
+  beatSeconds: 3.4,
+};
+
+export const CUTSCENES = {
+  3: {
+    title: 'LUMI BEBAS',
+    beats: [
+      { who: 'lumi', text: 'Luma! Terima kasih… akhirnya aku bebas dari penjara Dark Pekat!' },
+      { who: 'lumi', text: 'Tapi Lulu masih di sana. Malam ke-6, kita selamatkan dia bersama-sama.' },
+      { who: 'luma', text: 'Kita berdua. Terbang bersamaku, Lumi!' },
+    ],
+  },
+  6: {
+    title: 'LULU BEBAS',
+    beats: [
+      { who: 'lulu', text: 'Aku bebas! Terima kasih, Luma… dan Lumi.' },
+      { who: 'lumi', text: 'Sekarang kita bertiga. Dark Pekat tidak akan menang.' },
+      { who: 'luma', text: 'Malam ke-10, bos menunggu. Siapkan sayapmu — kita lawan bersama!' },
+    ],
+  },
+  // Boss intro: plays when a boss night (10, 20, ...) starts, before the fight.
+  boss: {
+    title: 'DARK PEKAT',
+    beats: [
+      { who: 'darkPekat', text: 'Kunang-kunang kecil… berani menantangku? Aku akan memadamkan cahayamu!' },
+      { who: 'luma', text: 'Kami bertiga sekarang. Cahaya kami tidak akan padam!' },
+      { who: 'lulu', text: 'Nyalakan lampionnya! Setiap cahaya yang menyala melukai Dark Pekat!' },
+    ],
+  },
+};
