@@ -581,14 +581,28 @@ export function createRenderer(canvas) {
     // One HP segment per lantern left to light.
     const hp = Math.max(0, LANTERN.count - state.litCount);
     ctx.save();
-    ctx.translate(boss.x, boss.y + Math.sin(time * 1.4 + boss.phase) * 8);
+    ctx.translate(boss.x, boss.y + Math.sin(time * 1.4 + boss.phase) * 18);
     // ANDROID BUILD ONLY (v1.6.2) — the boss portrait was frozen: only a
     // 3px bob moved, so it read as stiff. It now sways and its aura
     // breathes; the HP bar below stays level (drawn outside the sway).
     ctx.save();
-    ctx.rotate(Math.sin(time * 0.9 + boss.phase) * 0.05);
+    ctx.rotate(Math.sin(time * 0.9 + boss.phase) * 0.12);
+    // ANDROID BUILD ONLY (v1.6.2) — round 2: a scale pulse reads even on a
+    // circle (rotation alone is invisible on a round portrait).
+    const breathe = 1 + 0.04 * Math.sin(time * 2 + boss.phase);
+    ctx.scale(breathe, breathe);
+    // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
+    // portrait circle, like the other figures' halos, so the circle reads
+    // as a grounded disc instead of a flat sticker.
+    const bossShadow = ctx.createRadialGradient(0, 10, boss.r * 0.5, 0, 10, boss.r * 2.9);
+    bossShadow.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
+    bossShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = bossShadow;
+    ctx.beginPath();
+    ctx.arc(0, 10, boss.r * 2.9, 0, Math.PI * 2);
+    ctx.fill();
     const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, boss.r * 2.4);
-    aura.addColorStop(0, `rgba(36, 26, 69, ${0.45 + 0.2 * Math.sin(time * 2 + boss.phase)})`);
+    aura.addColorStop(0, `rgba(36, 26, 69, ${0.55 + 0.25 * Math.sin(time * 2 + boss.phase)})`);
     aura.addColorStop(1, 'rgba(36, 26, 69, 0)');
     ctx.fillStyle = aura;
     ctx.beginPath();
@@ -832,9 +846,18 @@ export function createRenderer(canvas) {
     // as stiff. It now bobs 5px, leans into its walk, and stretches
     // (squash & stretch) while lunging.
     const lunging = hazard.mode === 'lunge';
-    ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 5);
-    ctx.rotate(Math.sin(time * 2 + hazard.phase) * 0.08);
-    if (lunging) ctx.scale(1.18, 0.82);
+    ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 10);
+    ctx.rotate(Math.sin(time * 2 + hazard.phase) * 0.15);
+    if (lunging) ctx.scale(1.3, 0.7);
+    // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
+    // portrait circle, like the other figures' halos.
+    const scorShadow = ctx.createRadialGradient(0, 5, 14, 0, 5, 46);
+    scorShadow.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
+    scorShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = scorShadow;
+    ctx.beginPath();
+    ctx.arc(0, 5, 46, 0, Math.PI * 2);
+    ctx.fill();
     const img = portraits.enemyScorpion;
     if (portraitReady(img)) {
       drawPortrait(img, 0, 0, 64, 'rgba(192, 132, 252, 0.30)', 'rgba(216, 180, 254, 0.95)');
@@ -864,12 +887,13 @@ export function createRenderer(canvas) {
       ctx.strokeStyle = 'rgba(192, 132, 252, 0.9)';
       ctx.lineWidth = 2;
       ctx.beginPath();
+      const tailWag = Math.sin(time * 5 + hazard.phase) * 4;
       ctx.moveTo(6, 2);
-      ctx.quadraticCurveTo(14, -8, 10, -16);
+      ctx.quadraticCurveTo(14, -8, 10 + tailWag, -16);
       ctx.stroke();
       ctx.fillStyle = '#f472b6';
       ctx.beginPath();
-      ctx.arc(10, -17, 2.5, 0, Math.PI * 2);
+      ctx.arc(10 + tailWag, -17, 2.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = 'rgba(192, 132, 252, 0.9)';
       ctx.beginPath();
