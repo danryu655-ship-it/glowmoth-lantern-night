@@ -101,28 +101,33 @@ export const SKIN_BUTTON = { x: 976, y: 24, w: 132, h: 40 };
 // ANDROID BUILD ONLY (v1.7.0) — the how-to-play tutorial: a button on the
 // title screen, and the guide content. Shown once before the first run
 // (after the prologue), replayable from the title any time.
+// v1.7.1 — wording rewritten from player feedback: the guide now says HOW
+// to collect light (fly into the motes), what lives are, and that Flare is
+// the attack on the darkness. Numbers verified against the code: 6 motes
+// per lantern (LANTERN.motesEach), 3 lives (RUN.lives), game over at 0
+// (EVENT_OVER in world.js hit()).
 export const HOWTO_BUTTON = { x: 832, y: 24, w: 132, h: 40 };
 export const HOWTO_KEY = 'glowmoth.howto.v1';
 export const HOWTO_GUIDE = [
   {
     letter: '1', name: 'TUJUAN', tag: '4 LENTERA TIAP MALAM', color: '#ffd54f',
-    desc: 'Kumpulkan kunang emas — tiap lentera menyala setelah cukup kunang terkumpul. Nyalakan keempatnya untuk menamatkan malam.',
+    desc: 'Terbang dan SENTUH kunang emas untuk mengambil cahayanya — tiap lentera butuh 6 kunang. Nyalakan keempatnya untuk menamatkan malam.',
   },
   {
     letter: '2', name: 'TERBANG — HP', tag: 'JOYSTICK KIRI', color: '#8ff0d0',
-    desc: 'Jempol kiri: joystick muncul di mana jarimu menyentuh. Seret ke arah yang kamu mau, Luma terbang ke sana.',
+    desc: 'Jempol kiri: joystick muncul di mana jarimu menyentuh. Seret ke arah kunang emas, Luma terbang menyentuhnya.',
   },
   {
     letter: '3', name: 'TERBANG — PC', tag: 'WASD / PANAH / MOUSE', color: '#8ecbff',
-    desc: 'Tahan WASD atau tombol panah, atau arahkan mouse — Luma terbang ke arah kursor.',
+    desc: 'Tahan WASD atau tombol panah, atau arahkan mouse — Luma mengikuti kursor. Sentuh kunang emas untuk mengambil cahayanya.',
   },
   {
     letter: '4', name: 'FLARE', tag: 'KETUK / SPASI  •  1 SPARK', color: '#f59e0b',
-    desc: 'Kilau cahaya radius 255: shade pingsan 1,3 detik & terdorong, dart hancur, kalajengking hanya pingsan. Isi ulang 1 Spark tiap 5 motes (maks 2).',
+    desc: 'Serang kegelapan dengan kilau cahaya: shade pingsan 1,3 detik & terdorong, dart hancur, kalajengking hanya pingsan. Isi ulang 1 Spark tiap 5 motes (maks 2).',
   },
   {
-    letter: '5', name: 'BAHAYA', tag: 'SHADE & DART', color: '#f87171',
-    desc: 'Hindari shade dan dart — kena serang, 1 hati hilang. Embun yang muncul memulihkan 1 hati (+50 poin).',
+    letter: '5', name: 'NYAWA', tag: '3 HATI', color: '#f87171',
+    desc: 'Kamu mulai dengan 3 hati. Kena shade atau dart: −1 hati; kalau habis, permainan berakhir. Embun memulihkan 1 hati & +50 poin.',
   },
   {
     letter: '6', name: 'BOS', tag: 'MALAM 10, 20, 30…', color: '#c084fc',
