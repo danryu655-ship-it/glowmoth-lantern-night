@@ -591,16 +591,6 @@ export function createRenderer(canvas) {
     // circle (rotation alone is invisible on a round portrait).
     const breathe = 1 + 0.04 * Math.sin(time * 2 + boss.phase);
     ctx.scale(breathe, breathe);
-    // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
-    // portrait circle, like the other figures' halos, so the circle reads
-    // as a grounded disc instead of a flat sticker.
-    const bossShadow = ctx.createRadialGradient(0, 18, boss.r * 0.5, 0, 18, boss.r * 3.6);
-    bossShadow.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
-    bossShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = bossShadow;
-    ctx.beginPath();
-    ctx.arc(0, 18, boss.r * 3.6, 0, Math.PI * 2);
-    ctx.fill();
     const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, boss.r * 2.4);
     aura.addColorStop(0, `rgba(36, 26, 69, ${0.55 + 0.25 * Math.sin(time * 2 + boss.phase)})`);
     aura.addColorStop(1, 'rgba(36, 26, 69, 0)');
@@ -625,6 +615,19 @@ export function createRenderer(canvas) {
         ctx.fill();
         ctx.globalAlpha = 1;
       }
+    // ANDROID BUILD ONLY (v1.6.2) — round 4: the drop shadow is a dark
+    // band hugging the ring's outer edge, drawn AFTER the portrait so
+    // nothing covers it (the earlier disc, drawn before the portrait,
+    // faded to ~0.1 alpha where it peeked past the glow — invisible).
+    const bossShadow = ctx.createRadialGradient(0, 12, 0, 0, 12, 160);
+    bossShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    bossShadow.addColorStop(0.68, 'rgba(0, 0, 0, 0)');
+    bossShadow.addColorStop(0.75, 'rgba(0, 0, 0, 0.5)');
+    bossShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = bossShadow;
+    ctx.beginPath();
+    ctx.arc(0, 12, 160, 0, Math.PI * 2);
+    ctx.fill();
     } else {
       // Body: a big jagged shadow, like a giant shade.
       ctx.fillStyle = boss.flash > 0 ? '#3d2b5e' : '#171029';
@@ -849,15 +852,6 @@ export function createRenderer(canvas) {
     ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 10);
     ctx.rotate(Math.sin(time * 2 + hazard.phase) * 0.15);
     if (lunging) ctx.scale(1.3, 0.7);
-    // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
-    // portrait circle, like the other figures' halos.
-    const scorShadow = ctx.createRadialGradient(0, 8, 14, 0, 8, 62);
-    scorShadow.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
-    scorShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = scorShadow;
-    ctx.beginPath();
-    ctx.arc(0, 8, 62, 0, Math.PI * 2);
-    ctx.fill();
     const img = portraits.enemyScorpion;
     if (portraitReady(img)) {
       drawPortrait(img, 0, 0, 64, 'rgba(192, 132, 252, 0.30)', 'rgba(216, 180, 254, 0.95)');
@@ -904,6 +898,17 @@ export function createRenderer(canvas) {
       ctx.lineTo(15, -2 - wiggle);
       ctx.stroke();
     }
+    // ANDROID BUILD ONLY (v1.6.2) — round 4: dark band hugging the ring's
+    // outer edge, drawn AFTER the portrait so nothing covers it.
+    const scorShadow = ctx.createRadialGradient(0, 6, 0, 0, 6, 48);
+    scorShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    scorShadow.addColorStop(0.66, 'rgba(0, 0, 0, 0)');
+    scorShadow.addColorStop(0.75, 'rgba(0, 0, 0, 0.5)');
+    scorShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = scorShadow;
+    ctx.beginPath();
+    ctx.arc(0, 6, 48, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
