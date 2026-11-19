@@ -97,6 +97,38 @@ export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
 // default skin uses the Luma portrait. The moth in flight is still drawn
 // procedurally — the skin only swaps its colours (see SKIN_PALETTES).
 export const SKIN_BUTTON = { x: 976, y: 24, w: 132, h: 40 };
+
+// ANDROID BUILD ONLY (v1.7.0) — the how-to-play tutorial: a button on the
+// title screen, and the guide content. Shown once before the first run
+// (after the prologue), replayable from the title any time.
+export const HOWTO_BUTTON = { x: 832, y: 24, w: 132, h: 40 };
+export const HOWTO_KEY = 'glowmoth.howto.v1';
+export const HOWTO_GUIDE = [
+  {
+    letter: '1', name: 'TUJUAN', tag: '4 LENTERA TIAP MALAM', color: '#ffd54f',
+    desc: 'Kumpulkan kunang emas — tiap lentera menyala setelah cukup kunang terkumpul. Nyalakan keempatnya untuk menamatkan malam.',
+  },
+  {
+    letter: '2', name: 'TERBANG — HP', tag: 'JOYSTICK KIRI', color: '#8ff0d0',
+    desc: 'Jempol kiri: joystick muncul di mana jarimu menyentuh. Seret ke arah yang kamu mau, Luma terbang ke sana.',
+  },
+  {
+    letter: '3', name: 'TERBANG — PC', tag: 'WASD / PANAH / MOUSE', color: '#8ecbff',
+    desc: 'Tahan WASD atau tombol panah, atau arahkan mouse — Luma terbang ke arah kursor.',
+  },
+  {
+    letter: '4', name: 'FLARE', tag: 'KETUK / SPASI  •  1 SPARK', color: '#f59e0b',
+    desc: 'Kilau cahaya radius 255: shade pingsan 1,3 detik & terdorong, dart hancur, kalajengking hanya pingsan. Isi ulang 1 Spark tiap 5 motes (maks 2).',
+  },
+  {
+    letter: '5', name: 'BAHAYA', tag: 'SHADE & DART', color: '#f87171',
+    desc: 'Hindari shade dan dart — kena serang, 1 hati hilang. Embun yang muncul memulihkan 1 hati (+50 poin).',
+  },
+  {
+    letter: '6', name: 'BOS', tag: 'MALAM 10, 20, 30…', color: '#c084fc',
+    desc: 'Tiap malam kelipatan 10 ada bos — Dark Pekat atau Ratu Laba-laba. Nyalakan 4 lentera untuk mengalahkannya.',
+  },
+];
 export const SKIN_CARDS = [
   { id: 'luma', x: 150, y: 150, w: 340, h: 440 },
   { id: 'golden', x: 470, y: 150, w: 340, h: 440 },

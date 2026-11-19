@@ -3,12 +3,12 @@
 // and victory. ?shot=title|skills|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, PROLOGUE_KEY, RUN, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, bossKind } from './config.js';
+import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, HOWTO_BUTTON, HOWTO_KEY, PROLOGUE_KEY, RUN, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, bossKind } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import {
-  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_HOWTO, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import {
   createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
@@ -104,6 +104,9 @@ function runGame() {
   let screen = SCREEN_TITLE;
   let cutscene = null;
   let prologuePage = 0;
+  // ANDROID BUILD ONLY (v1.7.0) — true while the tutorial is shown before
+  // the first run, so its button starts night 1 instead of returning.
+  let howtoFirst = false;
   let epiloguePage = 0;
   let epilogueCard = false;
   let skin = readSkin();
@@ -177,6 +180,19 @@ function runGame() {
       audio.play('start');
       announce('Padang rumput Luminaria. Tekan Enter untuk memulai.');
     } else {
+      enterPlay();
+    }
+  }
+
+  // ANDROID BUILD ONLY (v1.7.0) — before the first run, show the how-to
+  // tutorial once (after the prologue). Returning from it starts night 1.
+  function enterPlay() {
+    if (!demo && !storySeen(HOWTO_KEY)) {
+      howtoFirst = true;
+      screen = SCREEN_HOWTO;
+      audio.play('start');
+      announce('Cara main. Tekan Enter untuk mulai bermain.');
+    } else {
       startPlay();
     }
   }
@@ -213,6 +229,10 @@ function runGame() {
       // skin picker; the title background itself is unchanged.
       const onSkinButton = pos.x >= SKIN_BUTTON.x && pos.x <= SKIN_BUTTON.x + SKIN_BUTTON.w
         && pos.y >= SKIN_BUTTON.y && pos.y <= SKIN_BUTTON.y + SKIN_BUTTON.h;
+      // ANDROID BUILD ONLY (v1.7.0) — a tap on the CARA MAIN button opens
+      // the tutorial; a tap anywhere else starts the run.
+      const onHowtoButton = pos.x >= HOWTO_BUTTON.x && pos.x <= HOWTO_BUTTON.x + HOWTO_BUTTON.w
+        && pos.y >= HOWTO_BUTTON.y && pos.y <= HOWTO_BUTTON.y + HOWTO_BUTTON.h;
       if (input.consume('skills') || (pointer && onSkillButton)) {
         screen = SCREEN_SKILLS;
         announce('Skill & Badge. Tekan Enter untuk kembali.');
@@ -221,6 +241,12 @@ function runGame() {
       if (pointer && onSkinButton) {
         screen = SCREEN_SKINS;
         announce('Pilih Skin. Ketuk kartu untuk memilih, Enter untuk kembali.');
+        return;
+      }
+      if (pointer && onHowtoButton) {
+        howtoFirst = false;
+        screen = SCREEN_HOWTO;
+        announce('Cara Main. Tekan Enter untuk kembali.');
         return;
       }
       if (confirm || pointer) startRun();
@@ -264,6 +290,24 @@ function runGame() {
       }
       return;
     }
+    // ANDROID BUILD ONLY (v1.7.0) — the tutorial: Enter, Esc or a tap
+    // on the button returns; on a first run it starts night 1.
+    if (screen === SCREEN_HOWTO) {
+      const pos = input.pointerPos();
+      const onBackButton = pos.x >= BACK_BUTTON.x && pos.x <= BACK_BUTTON.x + BACK_BUTTON.w
+        && pos.y >= BACK_BUTTON.y && pos.y <= BACK_BUTTON.y + BACK_BUTTON.h;
+      if (confirm || pause || (pointer && onBackButton)) {
+        if (howtoFirst) {
+          howtoFirst = false;
+          markStorySeen(HOWTO_KEY);
+          startPlay();
+        } else {
+          screen = SCREEN_TITLE;
+          announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+        }
+      }
+      return;
+    }
     // ANDROID BUILD ONLY (v1.4.5) — the prologue leads into night 1; the
     // epilogue leads into the dawn card.
     if (screen === SCREEN_PROLOGUE) {
@@ -272,7 +316,7 @@ function runGame() {
           prologuePage += 1;
         } else {
           markStorySeen(PROLOGUE_KEY);
-          startPlay();
+          enterPlay();
         }
       }
       return;
@@ -510,7 +554,7 @@ function runGame() {
       if (epilogueCard) epilogueCard = false;
       else enterDawn();
     }
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage, epilogueCard, badges, skin });
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage, epilogueCard, badges, skin, howtoFirst });
     input.endFrame();
   }
 

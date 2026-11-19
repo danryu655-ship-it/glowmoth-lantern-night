@@ -3,11 +3,12 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, FIELD, HOWTO_BUTTON, HOWTO_GUIDE, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_SKILLS = 'skills';
+export const SCREEN_HOWTO = 'howto';
 export const SCREEN_SKINS = 'skins';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
@@ -1446,6 +1447,28 @@ export function createRenderer(canvas) {
     ctx.fill();
     ctx.restore();
     label(ctx, 'SKIN', SKIN_BUTTON.x + 80, skinCy + 5, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center' });
+
+    // ANDROID BUILD ONLY (v1.7.0) — the CARA MAIN button, same style, left of SKIN.
+    ctx.save();
+    roundedRect(ctx, HOWTO_BUTTON.x, HOWTO_BUTTON.y, HOWTO_BUTTON.w, HOWTO_BUTTON.h, 20);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    const howtoCy = HOWTO_BUTTON.y + HOWTO_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(HOWTO_BUTTON.x + 10, howtoCy);
+    ctx.lineTo(HOWTO_BUTTON.x + 18, howtoCy - 8);
+    ctx.lineTo(HOWTO_BUTTON.x + 26, howtoCy);
+    ctx.lineTo(HOWTO_BUTTON.x + 18, howtoCy + 8);
+    ctx.closePath();
+    ctx.fillStyle = C.amber;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'CARA MAIN', HOWTO_BUTTON.x + 80, howtoCy + 5, { font: `700 15px ${MONO_FONT}`, color: C.cream, align: 'center' });
   }
 
   // ANDROID BUILD ONLY (v1.5.0) — the Skill & Badge guide. Display only:
@@ -1569,6 +1592,94 @@ export function createRenderer(canvas) {
     ctx.fill();
     ctx.restore();
     label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    void state;
+    void time;
+  }
+
+  // ANDROID BUILD ONLY (v1.7.0) — the how-to-play tutorial, shown once
+  // before the first run and replayable from the title. Display only:
+  // Enter, Esc or a tap on the button returns (to night 1 on a first run,
+  // to the title otherwise).
+  function drawHowto(state, time, first = false) {
+    overlay(0.58);
+    ctx.save();
+    roundedRect(ctx, 40, 28, 1200, 668, 18);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'CARA MAIN', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Luma si kunang-kunang — terbang, nyalakan lentera, kalahkan kegelapan', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+
+    const colX = [70, 660];
+    HOWTO_GUIDE.forEach((step, index) => {
+      const col = index % 2;
+      const row = Math.floor(index / 2);
+      const y = 132 + row * 92;
+      const cy = y + 32;
+      const iconCx = colX[col] + 48;
+      const textX = colX[col] + 96;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(iconCx, cy, 32, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(12, 18, 28, 1)';
+      ctx.fill();
+      ctx.strokeStyle = step.color;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, step.letter, iconCx, cy + 1, { font: `700 30px ${BODY_FONT}`, color: step.color, align: 'center', baseline: 'middle' });
+      label(ctx, step.name, textX, y + 12, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'left' });
+      ctx.save();
+      ctx.font = `700 19px ${MONO_FONT}`;
+      const nameWidth = ctx.measureText(step.name).width;
+      ctx.restore();
+      label(ctx, `—  ${step.tag}`, textX + nameWidth + 14, y + 12, { font: `700 12px ${MONO_FONT}`, color: step.color, align: 'left' });
+      const descLines = wrapLines(step.desc, 440, `500 15px ${BODY_FONT}`);
+      let lineY = y + 40;
+      for (const line of descLines) {
+        label(ctx, line, textX, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'left' });
+        lineY += 20;
+      }
+    });
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(120, 440);
+    ctx.lineTo(W - 120, 440);
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'P / ESC — JEDA   ·   M — SUARA   ·   K — SKILL', W / 2, 462, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+    label(ctx, 'Lumi bergabung malam 3  ·  Lulu malam 6  ·  Koko malam 9  ·  Zephyr malam 12', W / 2, 490, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
+
+    ctx.save();
+    roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+    const backCx = BACK_BUTTON.x + BACK_BUTTON.w / 2;
+    const backCy = BACK_BUTTON.y + BACK_BUTTON.h / 2;
+    if (!first) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(backCx - 38, backCy);
+      ctx.lineTo(backCx - 28, backCy - 7);
+      ctx.lineTo(backCx - 28, backCy + 7);
+      ctx.closePath();
+      ctx.fillStyle = C.cream;
+      ctx.fill();
+      ctx.restore();
+      label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    } else {
+      label(ctx, 'MULAI MAIN', backCx, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    }
     void state;
     void time;
   }
@@ -2084,6 +2195,7 @@ export function createRenderer(canvas) {
     ctx.restore();
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
     else if (screen === SCREEN_SKILLS) drawSkills(state, extra.badges ?? {}, time);
+    else if (screen === SCREEN_HOWTO) drawHowto(state, time, extra.howtoFirst === true);
     else if (screen === SCREEN_SKINS) drawSkinScreen(state, extra.skin ?? 'luma', time);
     else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
     else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time, extra.epilogueCard === true);
