@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|skills|skins|howto|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|skins|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,8 +6,9 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_HOWTO, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
+import { TIPS } from './config.js';
 
 function placeMote(x, y, phase) {
   return { x, y, vx: 0, vy: 0, phase, age: 2.2, life: 16, r: 11, alive: true };
@@ -68,11 +69,21 @@ export function stageShot(name, world, best) {
     return { screen: SCREEN_SKILLS, best };
   }
 
-  // ANDROID BUILD ONLY (v1.7.0) — the how-to-play tutorial screen.
-  if (name === 'howto') {
-    state.hazards = [];
+  // ANDROID BUILD ONLY (v1.8.0) — night 1 with the first tip visible:
+  // the moth flies toward the first motes while a shade hunts nearby.
+  if (name === 'tips') {
+    state.night = 1;
+    state.score = 0;
+    state.lives = 3;
+    state.progress = 2;
+    state.motesCollected = 2;
+    lightLanterns(state, 0);
+    state.hazards = [
+      { kind: 'shade', x: 806, y: 292, vx: -18, vy: 10, r: 21, speed: 84, phase: 0.8, age: 4, stun: 0, mode: 'hunt', angle: 0 },
+    ];
+    state.dew = null;
     state.particles = [];
-    return { screen: SCREEN_HOWTO, best };
+    return { screen: SCREEN_PLAY, best, tip: TIPS[0].text };
   }
 
   // ANDROID BUILD ONLY (v1.6.0) — the skin picker, Golden Sun selected.

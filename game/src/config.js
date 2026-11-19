@@ -98,41 +98,19 @@ export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
 // procedurally — the skin only swaps its colours (see SKIN_PALETTES).
 export const SKIN_BUTTON = { x: 976, y: 24, w: 132, h: 40 };
 
-// ANDROID BUILD ONLY (v1.7.0) — the how-to-play tutorial: a button on the
-// title screen, and the guide content. Shown once before the first run
-// (after the prologue), replayable from the title any time.
-// v1.7.1 — wording rewritten from player feedback: the guide now says HOW
-// to collect light (fly into the motes), what lives are, and that Flare is
-// the attack on the darkness. Numbers verified against the code: 6 motes
-// per lantern (LANTERN.motesEach), 3 lives (RUN.lives), game over at 0
-// (EVENT_OVER in world.js hit()).
-export const HOWTO_BUTTON = { x: 832, y: 24, w: 132, h: 40 };
-export const HOWTO_KEY = 'glowmoth.howto.v1';
-export const HOWTO_GUIDE = [
-  {
-    letter: '1', name: 'TUJUAN', tag: '4 LENTERA TIAP MALAM', color: '#ffd54f',
-    desc: 'Terbang dan SENTUH kunang emas untuk mengambil cahayanya — tiap lentera butuh 6 kunang. Nyalakan keempatnya untuk menamatkan malam.',
-  },
-  {
-    letter: '2', name: 'TERBANG — HP', tag: 'JOYSTICK KIRI', color: '#8ff0d0',
-    desc: 'Jempol kiri: joystick muncul di mana jarimu menyentuh. Seret ke arah kunang emas, Luma terbang menyentuhnya.',
-  },
-  {
-    letter: '3', name: 'TERBANG — PC', tag: 'WASD / PANAH / MOUSE', color: '#8ecbff',
-    desc: 'Tahan WASD atau tombol panah, atau arahkan mouse — Luma mengikuti kursor. Sentuh kunang emas untuk mengambil cahayanya.',
-  },
-  {
-    letter: '4', name: 'FLARE', tag: 'KETUK / SPASI  •  1 SPARK', color: '#f59e0b',
-    desc: 'Serang kegelapan dengan kilau cahaya: shade pingsan 1,3 detik & terdorong, dart hancur, kalajengking hanya pingsan. Isi ulang 1 Spark tiap 5 motes (maks 2).',
-  },
-  {
-    letter: '5', name: 'NYAWA', tag: '3 HATI', color: '#f87171',
-    desc: 'Kamu mulai dengan 3 hati. Kena shade atau dart: −1 hati; kalau habis, permainan berakhir. Embun memulihkan 1 hati & +50 poin.',
-  },
-  {
-    letter: '6', name: 'BOS', tag: 'MALAM 10, 20, 30…', color: '#c084fc',
-    desc: 'Tiap malam kelipatan 10 ada bos — Dark Pekat atau Ratu Laba-laba. Nyalakan 4 lentera untuk mengalahkannya.',
-  },
+// ANDROID BUILD ONLY (v1.8.0) — in-game tips ("Tips Sambil Main"): short
+// hints that appear while playing, at the moment each one matters, then
+// fade away. They replace the v1.7.0/v1.7.1 Cara Main screen, which the
+// player never read before playing. The numbers are verified against the
+// code: 6 motes per lantern (LANTERN.motesEach), 3 lives (RUN.lives),
+// Flare costs 1 Spark, refill 1 per 5 motes, max 2.
+export const TIPS = [
+  { id: 'collect', text: 'Terbang menyentuh kunang emas untuk mengambil cahayanya — tiap lentera butuh 6 kunang.' },
+  { id: 'flare', text: 'Shade mendekat! Ketuk layar / Spasi untuk Flare.' },
+  { id: 'spark', text: 'Flare memakai 1 Spark — isi ulang 1 tiap 5 motes (maks 2).' },
+  { id: 'lantern', text: 'Lentera menyala! Kumpulkan kunang untuk lentera berikutnya.' },
+  { id: 'lives', text: 'Kena serang: −1 hati. Kamu punya 3 hati — cari embun untuk memulihkan 1 hati.' },
+  { id: 'dew', text: 'Embun muncul! Sentuh untuk +1 hati & +50 poin.' },
 ];
 export const SKIN_CARDS = [
   { id: 'luma', x: 150, y: 150, w: 340, h: 440 },
