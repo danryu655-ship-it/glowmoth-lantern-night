@@ -581,9 +581,14 @@ export function createRenderer(canvas) {
     // One HP segment per lantern left to light.
     const hp = Math.max(0, LANTERN.count - state.litCount);
     ctx.save();
-    ctx.translate(boss.x, boss.y + Math.sin(time * 1.4 + boss.phase) * 3);
+    ctx.translate(boss.x, boss.y + Math.sin(time * 1.4 + boss.phase) * 8);
+    // ANDROID BUILD ONLY (v1.6.2) — the boss portrait was frozen: only a
+    // 3px bob moved, so it read as stiff. It now sways and its aura
+    // breathes; the HP bar below stays level (drawn outside the sway).
+    ctx.save();
+    ctx.rotate(Math.sin(time * 0.9 + boss.phase) * 0.05);
     const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, boss.r * 2.4);
-    aura.addColorStop(0, 'rgba(36, 26, 69, 0.55)');
+    aura.addColorStop(0, `rgba(36, 26, 69, ${0.45 + 0.2 * Math.sin(time * 2 + boss.phase)})`);
     aura.addColorStop(1, 'rgba(36, 26, 69, 0)');
     ctx.fillStyle = aura;
     ctx.beginPath();
@@ -651,6 +656,7 @@ export function createRenderer(canvas) {
         ctx.globalAlpha = 1;
       }
     }
+    ctx.restore();
     // HP bar under the boss (below the portrait when it is shown).
     const barW = 110;
     const barX = -barW / 2;
@@ -822,7 +828,13 @@ export function createRenderer(canvas) {
   // until the image loads.
   function drawScorpion(hazard, time) {
     ctx.save();
-    ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 2);
+    // ANDROID BUILD ONLY (v1.6.2) — the scorpion only bobbed 2px and read
+    // as stiff. It now bobs 5px, leans into its walk, and stretches
+    // (squash & stretch) while lunging.
+    const lunging = hazard.mode === 'lunge';
+    ctx.translate(hazard.x, hazard.y + Math.sin(time * 2 + hazard.phase) * 5);
+    ctx.rotate(Math.sin(time * 2 + hazard.phase) * 0.08);
+    if (lunging) ctx.scale(1.18, 0.82);
     const img = portraits.enemyScorpion;
     if (portraitReady(img)) {
       drawPortrait(img, 0, 0, 64, 'rgba(192, 132, 252, 0.30)', 'rgba(216, 180, 254, 0.95)');
@@ -861,10 +873,11 @@ export function createRenderer(canvas) {
       ctx.fill();
       ctx.strokeStyle = 'rgba(192, 132, 252, 0.9)';
       ctx.beginPath();
+      const wiggle = Math.sin(time * 6 + hazard.phase) * 3;
       ctx.moveTo(-8, 4);
-      ctx.lineTo(-15, -2);
+      ctx.lineTo(-15, -2 + wiggle);
       ctx.moveTo(8, 4);
-      ctx.lineTo(15, -2);
+      ctx.lineTo(15, -2 - wiggle);
       ctx.stroke();
     }
     ctx.restore();
