@@ -594,12 +594,12 @@ export function createRenderer(canvas) {
     // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
     // portrait circle, like the other figures' halos, so the circle reads
     // as a grounded disc instead of a flat sticker.
-    const bossShadow = ctx.createRadialGradient(0, 10, boss.r * 0.5, 0, 10, boss.r * 2.9);
-    bossShadow.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
+    const bossShadow = ctx.createRadialGradient(0, 18, boss.r * 0.5, 0, 18, boss.r * 3.6);
+    bossShadow.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
     bossShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = bossShadow;
     ctx.beginPath();
-    ctx.arc(0, 10, boss.r * 2.9, 0, Math.PI * 2);
+    ctx.arc(0, 18, boss.r * 3.6, 0, Math.PI * 2);
     ctx.fill();
     const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, boss.r * 2.4);
     aura.addColorStop(0, `rgba(36, 26, 69, ${0.55 + 0.25 * Math.sin(time * 2 + boss.phase)})`);
@@ -851,12 +851,12 @@ export function createRenderer(canvas) {
     if (lunging) ctx.scale(1.3, 0.7);
     // ANDROID BUILD ONLY (v1.6.2) — round 2: soft drop shadow behind the
     // portrait circle, like the other figures' halos.
-    const scorShadow = ctx.createRadialGradient(0, 5, 14, 0, 5, 46);
-    scorShadow.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
+    const scorShadow = ctx.createRadialGradient(0, 8, 14, 0, 8, 62);
+    scorShadow.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
     scorShadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = scorShadow;
     ctx.beginPath();
-    ctx.arc(0, 5, 46, 0, Math.PI * 2);
+    ctx.arc(0, 8, 62, 0, Math.PI * 2);
     ctx.fill();
     const img = portraits.enemyScorpion;
     if (portraitReady(img)) {

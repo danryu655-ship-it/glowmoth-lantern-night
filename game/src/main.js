@@ -80,6 +80,12 @@ function saveSkin(value) {
 function runShot(name) {
   const best = readBest();
   const scene = stageShot(name, world, best);
+  // ANDROID BUILD ONLY (v1.6.2) — the shot paints only 2 frames and stops,
+  // so motion can never be seen by comparing screenshots over time. ?t=N
+  // shifts the frozen frame's clock instead: two URLs (t=0 vs t=2.2) show
+  // two different poses of the same scene.
+  const tParam = Number.parseFloat(params.get('t') ?? '');
+  if (Number.isFinite(tParam)) world.state.time = 12.4 + tParam;
   let painted = 0;
   function paint() {
     renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage, epilogueCard: scene.epilogueCard ?? false, badges: readBadges(), skin: scene.skin ?? readSkin() });
