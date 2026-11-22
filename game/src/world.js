@@ -52,6 +52,10 @@ export function createWorld(seed) {
     lastEvent: 0,
     nightCleared: false,
     // ANDROID BUILD ONLY (v1.3.0) — companions, max hearts, boss.
+    // ANDROID BUILD ONLY (v1.9.0) — the chosen moth (applyCharacter) and
+    // the chosen mode ('quest' or 'endless'); reset() defaults both.
+    character: 'luma',
+    mode: 'quest',
     maxLives: RUN.lives,
     lumi: false,
     lulu: false,
@@ -110,6 +114,8 @@ export function createWorld(seed) {
     state.dewTimer = 15;
     state.bonus = 0;
     state.nightCleared = false;
+    state.character = 'luma';
+    state.mode = 'quest';
     state.maxLives = RUN.lives;
     state.lumi = false;
     state.lulu = false;
@@ -129,6 +135,19 @@ export function createWorld(seed) {
     state.shieldTimer = SHIELD.interval;
     state.shieldPop = 0;
     for (let index = 0; index < 5; index += 1) spawnMote(state, rand);
+  }
+
+  // ANDROID BUILD ONLY (v1.9.0) — the chosen moth. The passive runs
+  // from night 1 (see step: the checks accept the companion flag OR the
+  // player being that moth), but the companion visual stays off — the
+  // chosen moth is already you, so it must not fly alongside itself.
+  // Lulu starts with 4 hearts.
+  function applyCharacter(id) {
+    state.character = ['luma', 'lumi', 'lulu', 'koko', 'zephyr'].includes(id) ? id : 'luma';
+    if (state.character === 'lulu') {
+      state.maxLives = RUN.lives + 1;
+      state.lives = RUN.lives + 1;
+    }
   }
 
   function nextNight() {
@@ -227,14 +246,14 @@ export function createWorld(seed) {
         state.nightCleared = true;
         state.bonus = 200 * state.night + state.lives * 50;
         state.score += state.bonus;
-        if (state.night === 3 && !state.lumi) {
+        if (state.night === 3 && !state.lumi && state.character !== 'lumi') {
           state.lumi = true;
           state.lumiPos = createCompanion(state.player.x - 40, state.player.y + 20, 'lumi');
           state.pops.push({
             x: state.player.x, y: state.player.y - 44, text: 'LUMI BERGABUNG!', age: 0, life: 1.4, big: true,
           });
         }
-        if (state.night === 6 && !state.lulu) {
+        if (state.night === 6 && !state.lulu && state.character !== 'lulu') {
           state.lulu = true;
           state.luluPos = createCompanion(state.player.x + 40, state.player.y + 20, 'lulu');
           state.maxLives = RUN.lives + 1;
@@ -244,14 +263,14 @@ export function createWorld(seed) {
           });
         }
         // ANDROID BUILD ONLY (v1.6.0) — Koko (night 9) and Zephyr (night 12).
-        if (state.night === COMPANION.kokoNight && !state.koko) {
+        if (state.night === COMPANION.kokoNight && !state.koko && state.character !== 'koko') {
           state.koko = true;
           state.kokoPos = createCompanion(state.player.x - 40, state.player.y - 20, 'koko');
           state.pops.push({
             x: state.player.x, y: state.player.y - 44, text: 'KOKO BERGABUNG!', age: 0, life: 1.4, big: true,
           });
         }
-        if (state.night === COMPANION.zephyrNight && !state.zephyr) {
+        if (state.night === COMPANION.zephyrNight && !state.zephyr && state.character !== 'zephyr') {
           state.zephyr = true;
           state.zephyrPos = createCompanion(state.player.x + 40, state.player.y - 20, 'zephyr');
           state.pops.push({
@@ -463,7 +482,7 @@ export function createWorld(seed) {
 
     // ANDROID BUILD ONLY (v1.4.0) — Lulu's shield: one free hit every
     // minute once she has joined. The timer runs only while no shield is up.
-    if (state.lulu && !state.shield) {
+    if ((state.lulu || state.character === 'lulu') && !state.shield) {
       state.shieldTimer -= dt;
       if (state.shieldTimer <= 0) {
         state.shield = true;
@@ -478,7 +497,7 @@ export function createWorld(seed) {
 
     // ANDROID BUILD ONLY (v1.6.0) — Koko's ember: the nearest shade within
     // range burns away every 8 seconds.
-    if (state.koko) {
+    if (state.koko || state.character === 'koko') {
       state.kokoTimer -= dt;
       if (state.kokoTimer <= 0) {
         state.kokoTimer = COMPANION.kokoScorchInterval;
@@ -543,8 +562,9 @@ export function createWorld(seed) {
     for (let index = state.motes.length - 1; index >= 0; index -= 1) {
       const mote = state.motes[index];
       updateMote(mote, dt);
-      // Lumi's light pulls nearby motes toward the moth.
-      if (state.lumi) {
+      // Lumi's light pulls nearby motes toward the moth — the
+      // companion, or the player being Lumi.
+      if (state.lumi || state.character === 'lumi') {
         const dx = player.x - mote.x;
         const dy = player.y - mote.y;
         const distance = Math.hypot(dx, dy);
@@ -588,7 +608,7 @@ export function createWorld(seed) {
 
     // ANDROID BUILD ONLY (v1.6.0) — Zephyr's drift: every shadow and dart
     // moves 25% slower while she flies with you.
-    const slow = state.zephyr ? COMPANION.zephyrSlow : 1;
+    const slow = (state.zephyr || state.character === 'zephyr') ? COMPANION.zephyrSlow : 1;
     for (let index = state.hazards.length - 1; index >= 0; index -= 1) {
       const hazard = state.hazards[index];
       if (hazard.kind === 'dart') updateDart(hazard, player, dt * slow);
@@ -632,6 +652,6 @@ export function createWorld(seed) {
   }
 
   reset();
-  return { state, reset, nextNight, step, flare };
+  return { state, reset, nextNight, step, flare, applyCharacter };
 }
 

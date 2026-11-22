@@ -198,6 +198,11 @@ function runGame() {
 
   function startRun() {
     world.reset();
+    // ANDROID BUILD ONLY (v1.9.0) — the selection drives the run: the
+    // chosen moth's passive is live from night 1, and Endless records
+    // its mode so the story beats are skipped.
+    world.applyCharacter(selection.character);
+    world.state.mode = selection.mode;
     accumulator = 0;
     audio.unlock();
     // ANDROID BUILD ONLY (v1.4.5) — the prologue plays once, before the
@@ -439,7 +444,7 @@ function runGame() {
         // ANDROID BUILD ONLY (v1.4.4) — a boss night opens with its intro
         // cutscene instead of jumping straight into the fight. v1.6.0: only
         // Dark Pekat gets the intro — the Spider Queen has no dialogue.
-        if (ENDLESS && world.state.night % BOSS.every === 0 && bossKind(world.state.night) === 'pekat') {
+        if (ENDLESS && selection.mode === 'quest' && world.state.night % BOSS.every === 0 && bossKind(world.state.night) === 'pekat') {
           cutscene = { night: world.state.night, boss: true, beat: 0, beatTime: 0 };
           screen = SCREEN_CUTSCENE;
           audio.play('clear');
@@ -493,10 +498,10 @@ function runGame() {
     if (world.state.night === 3) awardBadge('lumi');
     if (world.state.night === 6) awardBadge('lulu');
     if (world.state.bossBonus > 0) awardBadge(world.state.lastBossKind === 'ratu' ? 'ratu' : 'pekat');
-    const joined = world.state.night === 3 ? ' Lumi bergabung dengan Luma.'
-      : world.state.night === 6 ? ' Lulu bergabung dengan Luma.'
-      : world.state.night === 9 ? ' Koko bergabung dengan Luma.'
-      : world.state.night === 12 ? ' Zephyr bergabung dengan Luma.' : '';
+    const joined = world.state.night === 3 && selection.character !== 'lumi' ? ' Lumi bergabung dengan Luma.'
+      : world.state.night === 6 && selection.character !== 'lulu' ? ' Lulu bergabung dengan Luma.'
+      : world.state.night === 9 && selection.character !== 'koko' ? ' Koko bergabung dengan Luma.'
+      : world.state.night === 12 && selection.character !== 'zephyr' ? ' Zephyr bergabung dengan Luma.' : '';
     const bossDown = world.state.bossBonus > 0 ? ` ${BOSS_KINDS[world.state.lastBossKind ?? 'pekat'].name} kalah! Bonus bos ${world.state.bossBonus}.` : '';
     announce(ENDLESS && world.state.night >= RUN.nightsToWin
       ? `Three nights lit — you won! The garden glows on. Bonus ${world.state.bonus}.${joined}${bossDown} Press Enter for night ${world.state.night + 1}.`
@@ -564,7 +569,7 @@ function runGame() {
       if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       // ANDROID BUILD ONLY (v1.4.4) — after night 3 (Lumi freed) and night 6
       // (Lulu freed) the dawn cutscene plays before the dawn card.
-      else if (ENDLESS && CUTSCENES[world.state.night]) {
+      else if (ENDLESS && selection.mode === 'quest' && CUTSCENES[world.state.night]) {
         // ANDROID BUILD ONLY (v1.6.0) — the illustration card comes first.
         const cardForNight = { 3: 'cardNight3', 6: 'cardNight6' };
         cutscene = { night: world.state.night, beat: 0, beatTime: 0, card: cardForNight[world.state.night] ?? null, cardDone: false };
@@ -575,7 +580,7 @@ function runGame() {
       // ANDROID BUILD ONLY (v1.4.5) — the first boss defeat ends in the
       // epilogue, once, before the dawn card. v1.6.0: the epilogue is Dark
       // Pekat's redemption; it only plays when he falls, not the Queen.
-      } else if (world.state.bossBonus > 0 && world.state.lastBossKind === 'pekat' && !storySeen(EPILOGUE_KEY)) {
+      } else if (selection.mode === 'quest' && world.state.bossBonus > 0 && world.state.lastBossKind === 'pekat' && !storySeen(EPILOGUE_KEY)) {
         markStorySeen(EPILOGUE_KEY);
         epiloguePage = 0;
         epilogueCard = true;
@@ -646,7 +651,7 @@ function runGame() {
       if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       else {
         world.nextNight();
-        if (ENDLESS && world.state.night % BOSS.every === 0 && bossKind(world.state.night) === 'pekat') {
+        if (ENDLESS && selection.mode === 'quest' && world.state.night % BOSS.every === 0 && bossKind(world.state.night) === 'pekat') {
           cutscene = { night: world.state.night, boss: true, beat: 0, beatTime: 0 };
           screen = SCREEN_CUTSCENE;
           audio.play('clear');

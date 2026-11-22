@@ -2146,13 +2146,15 @@ export function createRenderer(canvas) {
     overlay(0.58);
     // ANDROID BUILD ONLY (v1.3.1) — on the nights Lumi (3) and Lulu (6) join,
     // their portrait takes centre stage, like the approved preview.
-    const join = state.night === 3
+    // ANDROID BUILD ONLY (v1.9.0) — the chosen moth never "joins" on
+    // its night: it is already the player, so no portrait card here.
+    const join = state.night === 3 && state.character !== 'lumi'
       ? { img: portraits.lumi, name: 'LUMI', glow: 'rgba(143, 240, 208, 0.30)' }
-      : state.night === 6
+      : state.night === 6 && state.character !== 'lulu'
         ? { img: portraits.lulu, name: 'LULU', glow: 'rgba(142, 203, 255, 0.30)' }
-        : state.night === 9
+        : state.night === 9 && state.character !== 'koko'
           ? { img: portraits.companionKoko, name: 'KOKO', glow: 'rgba(251, 146, 60, 0.30)' }
-          : state.night === 12
+          : state.night === 12 && state.character !== 'zephyr'
             ? { img: portraits.companionZephyr, name: 'ZEPHYR', glow: 'rgba(192, 132, 252, 0.30)' }
             : null;
     if (join !== null && portraitReady(join.img)) {
@@ -2202,11 +2204,13 @@ export function createRenderer(canvas) {
       // v1.4.6: the night's own story line, not the generic hint — the hint
       // is already in the boss cutscene (Lumi's last beat), and without this
       // the night-9 Kronik line never appeared anywhere.
-      const bossStory = state.night <= STRINGS.dawnStory.length
-        ? STRINGS.dawnStory[state.night - 1]
-        : nextKind === 'ratu'
+      // ANDROID BUILD ONLY (v1.9.0) — Endless shows the generic boss
+      // line, never the Kronik line.
+      const bossStory = state.mode === 'endless' || state.night > STRINGS.dawnStory.length
+        ? nextKind === 'ratu'
           ? 'Jaring bayangan menutupi langit. Nyalakan keempat lampion — setiap cahaya yang menyala membakar jaring sang Ratu.'
-          : 'Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.';
+          : 'Kegelapan pekat turun dari langit. Nyalakan keempat lampion — setiap cahaya yang menyala melukai Dark Pekat.'
+        : STRINGS.dawnStory[state.night - 1];
       const bossLines = wrapLines(bossStory, 920, `italic 500 21px ${TITLE_FONT}`);
       let bossY = 356;
       for (const line of bossLines) {
@@ -2228,9 +2232,13 @@ export function createRenderer(canvas) {
     // v1.4.6: the line is WRAPPED — the Kronik lines are long, and a single
     // unwrapped line ran off both edges of the screen (reported 18 Nov).
     // Everything below the story shifts down with the line count.
-    const dawnStory = state.night <= STRINGS.dawnStory.length
-      ? STRINGS.dawnStory[state.night - 1]
-      : `Malam ${state.night} berlalu. Luma, Lumi, dan Lulu menjaga taman bersama.`;
+    // ANDROID BUILD ONLY (v1.9.0) — Endless shows a neutral line, never
+    // the Kronik line (it would name rescues that never happened).
+    const dawnStory = state.mode === 'endless'
+      ? `Malam ${state.night} berlalu. Taman kembali tenang — untuk sesaat.`
+      : state.night <= STRINGS.dawnStory.length
+        ? STRINGS.dawnStory[state.night - 1]
+        : `Malam ${state.night} berlalu. Luma, Lumi, dan Lulu menjaga taman bersama.`;
     const storyLines = wrapLines(dawnStory, 920, `italic 500 22px ${TITLE_FONT}`);
     let storyY = 260;
     for (const line of storyLines) {
