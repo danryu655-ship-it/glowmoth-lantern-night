@@ -124,7 +124,7 @@ export const MODE_CARDS = [
 export const CHARACTERS = [
   { id: 'luma', name: 'LUMA', tag: 'SEIMBANG', skill: 'FLARE BURST', portrait: 'luma', color: '#f59e0b', hp: 4, speed: 5, desc: 'Seimbang. Flare seperti biasa.' },
   { id: 'lumi', name: 'LUMI', tag: 'MAGNET', skill: 'MOTE MAGNET', portrait: 'lumi', color: '#8ff0d0', hp: 3, speed: 2, desc: 'Kunang ketarik dari jauh sejak malam 1.' },
-  { id: 'lulu', name: 'LULU', tag: 'PELINDUNG', skill: "LULU'S SHIELD", portrait: 'lulu', color: '#8ecbff', hp: 2, speed: 3, desc: 'Mulai 4 hati + perisai tiap 60 detik.' },
+  { id: 'lulu', name: 'LULU', tag: 'PELINDUNG', skill: "LULU'S SHIELD", portrait: 'lulu', color: '#8ecbff', hp: 2, speed: 3, desc: 'Mulai 2 hati + perisai tiap 60 detik.' },
   { id: 'koko', name: 'KOKO', tag: 'PENYERANG', skill: 'KOKO EMBER', portrait: 'companionKoko', color: '#fb923c', hp: 2, speed: 4, desc: 'Bakar 1 shade terdekat tiap 8 detik.' },
   { id: 'zephyr', name: 'ZEPHYR', tag: 'CEPAT', skill: 'ZEPHYR DRIFT', portrait: 'companionZephyr', color: '#c084fc', hp: 2, speed: 3, desc: 'Semua bahaya 25% lebih lambat.' },
 ];
@@ -162,14 +162,15 @@ export const SKIN_BUTTON = { x: 976, y: 24, w: 132, h: 40 };
 // hints that appear while playing, at the moment each one matters, then
 // fade away. They replace the v1.7.0/v1.7.1 Cara Main screen, which the
 // player never read before playing. The numbers are verified against the
-// code: 6 motes per lantern (LANTERN.motesEach), 3 lives (RUN.lives),
-// Flare costs 1 Spark, refill 1 per 5 motes, max 2.
+// code: 6 motes per lantern (LANTERN.motesEach), hearts from the
+// hero's hp (CHARACTERS), Flare costs 1 Spark, refill 1 per 5 motes,
+// max 2.
 export const TIPS = [
   { id: 'collect', text: 'Terbang menyentuh kunang emas untuk mengambil cahayanya — tiap lentera butuh 6 kunang.' },
   { id: 'flare', text: 'Shade mendekat! Ketuk layar / Spasi untuk Flare.' },
   { id: 'spark', text: 'Flare memakai 1 Spark — isi ulang 1 tiap 5 motes (maks 2).' },
   { id: 'lantern', text: 'Lentera menyala! Kumpulkan kunang untuk lentera berikutnya.' },
-  { id: 'lives', text: 'Kena serang: −1 hati. Kamu punya 3 hati — cari embun untuk memulihkan 1 hati.' },
+  { id: 'lives', text: 'Kena serang: −1 hati. Cari embun untuk memulihkan 1 hati.' },
   { id: 'dew', text: 'Embun muncul! Sentuh untuk +1 hati & +50 poin.' },
 ];
 export const SKIN_CARDS = [

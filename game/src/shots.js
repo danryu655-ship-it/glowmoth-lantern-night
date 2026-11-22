@@ -92,7 +92,8 @@ export function stageShot(name, world, best) {
   if (name === 'tips') {
     state.night = 1;
     state.score = 0;
-    state.lives = 3;
+    state.lives = 4;
+    state.maxLives = 4;
     state.progress = 2;
     state.motesCollected = 2;
     lightLanterns(state, 0);
@@ -116,7 +117,8 @@ export function stageShot(name, world, best) {
   if (name === 'queen') {
     state.night = 20;
     state.score = 18400;
-    state.lives = 4;
+    state.lives = 5;
+    state.maxLives = 5;
     state.progress = 2;
     state.motesCollected = 320;
     state.lumi = true;
@@ -143,6 +145,7 @@ export function stageShot(name, world, best) {
     state.night = 5;
     state.score = 4200;
     state.lives = 3;
+    state.maxLives = 4;
     state.progress = 3;
     state.motesCollected = 80;
     state.lumi = true;
@@ -165,6 +168,7 @@ export function stageShot(name, world, best) {
     state.score = 2100;
     state.bonus = 450;
     state.lives = 3;
+    state.maxLives = 4;
     state.progress = 0;
     state.motesCollected = 48;
     state.lumi = true;
@@ -182,6 +186,7 @@ export function stageShot(name, world, best) {
     state.night = 2;
     state.score = 1480;
     state.lives = 2;
+    state.maxLives = 4;
     state.sparks = 1;
     state.sparkCharge = 3;
     state.chain = 7;
@@ -205,16 +210,17 @@ export function stageShot(name, world, best) {
   }
 
   // ANDROID BUILD ONLY (v1.9.2 preview) — the same night-2 frame as
-  // ?shot=play, but played as Lumi (mint moth) or Lulu (blue moth, 4
-  // hearts, shield ready with AKTIF in the HUD). The character palette
-  // and the shield cluster are what these two shots exist to show.
+  // ?shot=play, but played as Lumi (mint moth, 3 hearts) or Lulu (blue
+  // moth, 2 hearts, shield ready with AKTIF in the HUD). The character
+  // palette and the shield cluster are what these two shots exist to
+  // show.
   if (name === 'playlumi' || name === 'playlulu') {
     const asLulu = name === 'playlulu';
     state.night = 2;
     state.score = 1480;
     state.character = asLulu ? 'lulu' : 'lumi';
-    state.lives = asLulu ? 4 : 2;
-    state.maxLives = asLulu ? 4 : 3;
+    state.lives = asLulu ? 2 : 3;
+    state.maxLives = asLulu ? 2 : 3;
     state.sparks = 1;
     state.sparkCharge = 3;
     state.chain = 7;
@@ -241,6 +247,7 @@ export function stageShot(name, world, best) {
     state.night = 2;
     state.score = 1480;
     state.lives = 2;
+    state.maxLives = 4;
     state.sparks = 1;
     state.sparkCharge = 3;
     state.chain = 7;
@@ -263,6 +270,7 @@ export function stageShot(name, world, best) {
     state.score = 1320;
     state.bonus = 450;
     state.lives = 2;
+    state.maxLives = 4;
     state.progress = 0;
     state.motesCollected = 24;
     lightLanterns(state, 4);
@@ -281,7 +289,8 @@ export function stageShot(name, world, best) {
     state.night = night;
     state.score = night === 3 ? 2100 : 5200;
     state.bonus = 450;
-    state.lives = night === 3 ? 3 : 4;
+    state.lives = night === 3 ? 3 : 5;
+    state.maxLives = night === 3 ? 4 : 5;
     state.progress = 0;
     state.motesCollected = night === 3 ? 48 : 96;
     state.lumi = true;
@@ -305,7 +314,8 @@ export function stageShot(name, world, best) {
     state.night = 10;
     state.score = 8400;
     state.bonus = 450;
-    state.lives = 4;
+    state.lives = 5;
+    state.maxLives = 5;
     state.progress = 0;
     state.motesCollected = 160;
     state.lumi = true;
@@ -326,7 +336,8 @@ export function stageShot(name, world, best) {
   if (name === 'prologue') {
     state.night = 1;
     state.score = 0;
-    state.lives = 3;
+    state.lives = 4;
+    state.maxLives = 4;
     lightLanterns(state, 0);
     state.motes = [];
     state.hazards = [];
@@ -339,7 +350,8 @@ export function stageShot(name, world, best) {
     state.night = 10;
     state.score = 8400;
     state.bonus = 1000;
-    state.lives = 4;
+    state.lives = 5;
+    state.maxLives = 5;
     lightLanterns(state, 4);
     state.motes = [];
     state.hazards = [];
@@ -353,6 +365,7 @@ export function stageShot(name, world, best) {
     state.night = 3;
     state.score = 4860;
     state.lives = 2;
+    state.maxLives = 4;
     state.progress = 0;
     state.motesCollected = 71;
     state.peakCombo = 5;
@@ -372,6 +385,7 @@ export function stageShot(name, world, best) {
   state.night = 2;
   state.score = 2140;
   state.lives = 0;
+  state.maxLives = 4;
   state.sparks = 0;
   state.progress = 3;
   state.motesCollected = 38;

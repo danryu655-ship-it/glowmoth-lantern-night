@@ -3,8 +3,15 @@
 // a bit set of events for main.js to turn into screens, sound and announcements.
 
 import {
-  BOSS, BOSS_KINDS, COMPANION, DEW, FIELD, FLARE, HAZARD, LANTERN, MOTE, MOTH, RUN, SHIELD, bossKind,
+  BOSS, BOSS_KINDS, CHARACTERS, COMPANION, DEW, FIELD, FLARE, HAZARD, LANTERN, MOTE, MOTH, RUN, SHIELD, bossKind,
 } from './config.js';
+
+// ANDROID BUILD ONLY (v1.9.4) — the hero's own stats. Hearts come from
+// hp (Luma 4, Lumi 3, Lulu 2, Koko 2, Zephyr 2); the 1-5 speed stat
+// scales the top speed, 5 keeping the current 405.
+function characterStats(id) {
+  return CHARACTERS.find((entry) => entry.id === id) ?? CHARACTERS[0];
+}
 import {
   createBoss, createCompanion, createMoth, resetLanterns, spawnBossDart, spawnDart, spawnDew, spawnMote, spawnScorpion, spawnShade, updateCompanion, updateDart, updateMote, updateScorpion, updateShade,
 } from './entities.js';
@@ -25,7 +32,7 @@ export function createWorld(seed) {
   const state = {
     night: 1,
     score: 0,
-    lives: RUN.lives,
+    lives: characterStats('luma').hp,
     sparks: 1,
     sparkCharge: 0,
     chain: 0,
@@ -56,7 +63,7 @@ export function createWorld(seed) {
     // the chosen mode ('quest' or 'endless'); reset() defaults both.
     character: 'luma',
     mode: 'quest',
-    maxLives: RUN.lives,
+    maxLives: characterStats('luma').hp,
     lumi: false,
     lulu: false,
     lumiPos: null,
@@ -87,7 +94,6 @@ export function createWorld(seed) {
     seedRun();
     state.night = 1;
     state.score = 0;
-    state.lives = RUN.lives;
     state.sparks = 1;
     state.sparkCharge = 0;
     state.chain = 0;
@@ -116,7 +122,9 @@ export function createWorld(seed) {
     state.nightCleared = false;
     state.character = 'luma';
     state.mode = 'quest';
-    state.maxLives = RUN.lives;
+    // ANDROID BUILD ONLY (v1.9.4) — hearts from the hero's hp stat.
+    state.maxLives = characterStats(state.character).hp;
+    state.lives = state.maxLives;
     state.lumi = false;
     state.lulu = false;
     state.lumiPos = null;
@@ -141,13 +149,19 @@ export function createWorld(seed) {
   // from night 1 (see step: the checks accept the companion flag OR the
   // player being that moth), but the companion visual stays off — the
   // chosen moth is already you, so it must not fly alongside itself.
-  // Lulu starts with 4 hearts.
+  // ANDROID BUILD ONLY (v1.9.4) — hearts come from the hero's hp stat
+  // (Luma 4, Lumi 3, Lulu 2, Koko 2, Zephyr 2); Lulu's shield is her
+  // only extra now, her old +1-heart head start is gone.
   function applyCharacter(id) {
     state.character = ['luma', 'lumi', 'lulu', 'koko', 'zephyr'].includes(id) ? id : 'luma';
-    if (state.character === 'lulu') {
-      state.maxLives = RUN.lives + 1;
-      state.lives = RUN.lives + 1;
-    }
+    state.maxLives = characterStats(state.character).hp;
+    state.lives = state.maxLives;
+  }
+
+  // ANDROID BUILD ONLY (v1.9.4) — the hero's speed stat (1-5) as a top
+  // speed factor: 5 keeps the current speed, 2 flies at 0.7x.
+  function speedFactor() {
+    return 0.5 + 0.1 * characterStats(state.character).speed;
   }
 
   function nextNight() {
@@ -256,7 +270,9 @@ export function createWorld(seed) {
         if (state.night === 6 && !state.lulu && state.character !== 'lulu') {
           state.lulu = true;
           state.luluPos = createCompanion(state.player.x + 40, state.player.y + 20, 'lulu');
-          state.maxLives = RUN.lives + 1;
+          // ANDROID BUILD ONLY (v1.9.4) — +1 heart on top of the hero's
+          // own hearts (was an absolute RUN.lives + 1).
+          state.maxLives += 1;
           state.lives = Math.min(state.maxLives, state.lives + 1);
           state.pops.push({
             x: state.player.x, y: state.player.y - 44, text: 'LULU BERGABUNG! +1 HATI', age: 0, life: 1.4, big: true,
@@ -355,9 +371,10 @@ export function createWorld(seed) {
 
   function steer(dt, direction) {
     const player = state.player;
+    const factor = speedFactor();
     const input = Math.hypot(direction.x, direction.y);
     if (input > 0.001) {
-      const scale = MOTH.accel * Math.min(1, input);
+      const scale = MOTH.accel * factor * Math.min(1, input);
       player.vx += direction.x * scale * dt;
       player.vy += direction.y * scale * dt;
     }
@@ -365,9 +382,10 @@ export function createWorld(seed) {
     player.vx *= drag;
     player.vy *= drag;
     const speed = Math.hypot(player.vx, player.vy);
-    if (speed > MOTH.maxSpeed) {
-      player.vx = (player.vx / speed) * MOTH.maxSpeed;
-      player.vy = (player.vy / speed) * MOTH.maxSpeed;
+    const topSpeed = MOTH.maxSpeed * factor;
+    if (speed > topSpeed) {
+      player.vx = (player.vx / speed) * topSpeed;
+      player.vy = (player.vy / speed) * topSpeed;
     }
     player.x += player.vx * dt;
     player.y += player.vy * dt;
