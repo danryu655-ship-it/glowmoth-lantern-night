@@ -198,6 +198,51 @@ export const SKIN_PALETTES = {
     antenna: 'rgba(165, 243, 252, 0.8)',
   },
 };
+// ANDROID BUILD ONLY (v1.9.2) — the player moth's colours per chosen
+// character, in the same shape as SKIN_PALETTES and the same hues as
+// the companion palettes in render.js (lumi mint, lulu blue, koko
+// orange, zephyr purple). Luma is null: she keeps the default gold
+// moth, and the title-screen skins still apply to her. The skins are
+// Luma-only — a chosen character always flies in its own colours.
+export const CHARACTER_PALETTES = {
+  luma: null,
+  lumi: {
+    aura: ['rgba(143, 240, 208, 0.4)', 'rgba(143, 240, 208, 0.15)', 'rgba(143, 240, 208, 0)'],
+    upper: ['rgba(210, 255, 238, 0.95)', 'rgba(143, 240, 208, 0.75)', 'rgba(143, 240, 208, 0.25)'],
+    lower: ['rgba(210, 255, 238, 0.85)', 'rgba(143, 240, 208, 0.2)'],
+    body: ['#eafff5', '#8ff0d0', '#0f766e'],
+    head: '#d2ffef',
+    wingStroke: 'rgba(210, 255, 238, 0.5)',
+    antenna: 'rgba(210, 255, 238, 0.8)',
+  },
+  lulu: {
+    aura: ['rgba(142, 203, 255, 0.4)', 'rgba(142, 203, 255, 0.15)', 'rgba(142, 203, 255, 0)'],
+    upper: ['rgba(214, 235, 255, 0.95)', 'rgba(142, 203, 255, 0.75)', 'rgba(142, 203, 255, 0.25)'],
+    lower: ['rgba(214, 235, 255, 0.85)', 'rgba(142, 203, 255, 0.2)'],
+    body: ['#eff6ff', '#8ecbff', '#1d4ed8'],
+    head: '#dbeafe',
+    wingStroke: 'rgba(214, 235, 255, 0.5)',
+    antenna: 'rgba(214, 235, 255, 0.8)',
+  },
+  koko: {
+    aura: ['rgba(251, 146, 60, 0.4)', 'rgba(251, 146, 60, 0.15)', 'rgba(251, 146, 60, 0)'],
+    upper: ['rgba(254, 215, 170, 0.95)', 'rgba(251, 146, 60, 0.75)', 'rgba(251, 146, 60, 0.25)'],
+    lower: ['rgba(254, 215, 170, 0.85)', 'rgba(251, 146, 60, 0.2)'],
+    body: ['#fff7ed', '#fb923c', '#9a3412'],
+    head: '#ffedd5',
+    wingStroke: 'rgba(254, 215, 170, 0.5)',
+    antenna: 'rgba(254, 215, 170, 0.8)',
+  },
+  zephyr: {
+    aura: ['rgba(192, 132, 252, 0.4)', 'rgba(192, 132, 252, 0.15)', 'rgba(192, 132, 252, 0)'],
+    upper: ['rgba(233, 213, 255, 0.95)', 'rgba(192, 132, 252, 0.75)', 'rgba(192, 132, 252, 0.25)'],
+    lower: ['rgba(233, 213, 255, 0.85)', 'rgba(192, 132, 252, 0.2)'],
+    body: ['#faf5ff', '#c084fc', '#6b21a8'],
+    head: '#f3e8ff',
+    wingStroke: 'rgba(233, 213, 255, 0.5)',
+    antenna: 'rgba(233, 213, 255, 0.8)',
+  },
+};
 export const SKILL_GUIDE = [
   {
     id: 'flare', icon: 'icon-flare.svg', portrait: 'skillFlare', letter: 'F', name: 'FLARE BURST',

@@ -3,7 +3,7 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, HUD_BUTTONS, LANTERN, MODE_CARDS, MODES, PALETTE as C, PAUSE_BUTTONS, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTER_PALETTES, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, HUD_BUTTONS, LANTERN, MODE_CARDS, MODES, PALETTE as C, PAUSE_BUTTONS, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
@@ -195,6 +195,10 @@ export function createRenderer(canvas) {
   // ANDROID BUILD ONLY (v1.6.0) — the active skin, set by draw() from
   // main.js; drawMoth reads it when no skin is passed in the options.
   let skin = 'luma';
+  // ANDROID BUILD ONLY (v1.9.2) — the run's chosen character, set by
+  // draw() from state.character the same way the skin is set; drawMoth
+  // reads it so the player moth flies in its own colours.
+  let character = 'luma';
 
   function resize() {
     const ratio = Math.min(2, window.devicePixelRatio || 1);
@@ -768,7 +772,10 @@ export function createRenderer(canvas) {
 
     // ANDROID BUILD ONLY (v1.6.0) — the active skin swaps the moth's
     // colours; the default skin (luma) keeps the old stops exactly.
-    const pal = SKIN_PALETTES[options.skin ?? skin] ?? null;
+    // ANDROID BUILD ONLY (v1.9.2) — the chosen character wins over the
+    // skin: Luma's palette is null, so she keeps the skin behaviour;
+    // Lumi / Lulu / Koko / Zephyr fly in their own colours.
+    const pal = CHARACTER_PALETTES[character] ?? SKIN_PALETTES[options.skin ?? skin] ?? null;
     const aura = ctx.createRadialGradient(0, 0, 2, 0, 0, 54);
     aura.addColorStop(0, pal ? pal.aura[0] : 'rgba(255, 243, 201, 0.35)');
     aura.addColorStop(0.45, pal ? pal.aura[1] : 'rgba(200, 255, 235, 0.12)');
@@ -1297,7 +1304,11 @@ export function createRenderer(canvas) {
     }
     label(ctx, 'LIVES', W - 196, 84, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
     // ANDROID BUILD ONLY (v1.4.0) — Lulu's shield status.
-    if (state.lulu) {
+    // ANDROID BUILD ONLY (v1.9.2) — the cluster also shows when the
+    // player IS Lulu: before this, an Endless run as Lulu showed no
+    // countdown and no AKTIF at all (state.lulu only turns true when
+    // she JOINS in Quest mode), so the skill looked dead.
+    if (state.lulu || state.character === 'lulu') {
       drawShieldIcon(292, 50, state.shield);
       label(ctx, 'SHIELD', 312, 42, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
       label(ctx, state.shield ? 'AKTIF' : `${Math.ceil(state.shieldTimer)}s`, 312, 70, { font: `700 20px ${MONO_FONT}`, color: state.shield ? C.lulu : C.textDim });
@@ -2329,6 +2340,7 @@ export function createRenderer(canvas) {
   function draw(state, screen, best, extra = {}) {
     begin();
     skin = extra.skin ?? 'luma';
+    character = state.character ?? 'luma';
     const time = state.time + (extra.timeOffset ?? 0);
     const shake = state.shake;
     ctx.save();
