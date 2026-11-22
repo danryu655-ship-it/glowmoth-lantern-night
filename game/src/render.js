@@ -10,6 +10,7 @@ export const SCREEN_TITLE = 'title';
 export const SCREEN_SKILLS = 'skills';
 export const SCREEN_SKINS = 'skins';
 export const SCREEN_MODE = 'mode';
+export const SCREEN_CHARACTER = 'character';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
@@ -1656,11 +1657,11 @@ export function createRenderer(canvas) {
     void time;
   }
 
-  // ANDROID BUILD ONLY (v1.9.0) — mode + character select. Tap a card
-  // to choose it (saved at once); MULAI MAIN or Enter starts the run,
-  // KEMBALI or Esc returns to the title. Portraits are the game's own
-  // art (luma/lumi/lulu jpgs, koko/zephyr SVGs); until one loads, a
-  // coloured ring + letter stands in, like the Skill screen.
+  // ANDROID BUILD ONLY (v1.9.0 round 2) — pick a mode first. A tap on
+  // a card acts at once: QUEST starts the run as Luma (the story as it
+  // is now); TANPA AKHIR goes to the character picker. Enter uses the
+  // remembered mode; Esc returns to the title. The gold badge marks the
+  // last mode played.
   function drawModeScreen(state, selection, time) {
     overlay(0.58);
     ctx.save();
@@ -1671,8 +1672,8 @@ export function createRenderer(canvas) {
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
-    label(ctx, 'PILIH MODE & KARAKTER', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
-    label(ctx, 'Mode cerita seperti sekarang, atau main tanpa akhir — lalu pilih siapa yang terbang', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+    label(ctx, 'PILIH MODE', W / 2, 120, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Dua cara main — ikuti alur cerita, atau main sampai bosan', W / 2, 158, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
 
     for (const mode of MODES) {
       const card = MODE_CARDS.find((entry) => entry.id === mode.id);
@@ -1686,26 +1687,65 @@ export function createRenderer(canvas) {
       ctx.lineWidth = selected ? 2.5 : 1.4;
       ctx.stroke();
       ctx.restore();
-      label(ctx, mode.name, cx, card.y + 46, { font: `700 26px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
-      label(ctx, mode.tag, cx, card.y + 72, { font: `700 12px ${MONO_FONT}`, color: mode.color, align: 'center', spacing: 1 });
+      label(ctx, mode.name, cx, card.y + 62, { font: `700 26px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+      label(ctx, mode.tag, cx, card.y + 90, { font: `700 12px ${MONO_FONT}`, color: mode.color, align: 'center', spacing: 1 });
       const descLines = wrapLines(mode.desc, 420, `500 15px ${BODY_FONT}`);
-      let lineY = card.y + 100;
+      let lineY = card.y + 128;
       for (const line of descLines) {
         label(ctx, line, cx, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
         lineY += 20;
       }
+      label(ctx, mode.feat, cx, card.y + 188, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 1 });
       if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
     }
 
+    label(ctx, 'Ketuk QUEST untuk langsung main sebagai Luma  ·  ketuk TANPA AKHIR untuk pilih karakter', W / 2, 500, { font: `500 15px ${BODY_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center' });
+    const lastMode = MODES.find((m) => m.id === selection.mode) ?? MODES[0];
+    const lastChar = CHARACTERS.find((c) => c.id === selection.character) ?? CHARACTERS[0];
+    label(ctx, `Terakhir dimainkan: ${lastMode.name} · ${lastChar.name}`, W / 2, 540, { font: `700 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 1 });
+
     ctx.save();
-    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(120, 292);
-    ctx.lineTo(W - 120, 292);
+    roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+    ctx.lineWidth = 1.4;
     ctx.stroke();
     ctx.restore();
-    label(ctx, 'PILIH KARAKTER  —  FLARE TETAP UNTUK SEMUA, YANG BEDA PASIFNYA', W / 2, 320, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+    const backCx = BACK_BUTTON.x + BACK_BUTTON.w / 2;
+    const backCy = BACK_BUTTON.y + BACK_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backCx - 38, backCy);
+    ctx.lineTo(backCx - 28, backCy - 7);
+    ctx.lineTo(backCx - 28, backCy + 7);
+    ctx.closePath();
+    ctx.fillStyle = C.cream;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    void state;
+    void time;
+  }
+
+  // ANDROID BUILD ONLY (v1.9.0 round 2) — the Endless character picker:
+  // five moths, Flare for everyone, the passive is what differs. Tap a
+  // card to choose it (saved at once); MULAI MAIN or Enter starts the
+  // run, KEMBALI or Esc returns to the mode picker. The cards are tall
+  // with big portraits (Ø150) and a skill-name row, so the name sits
+  // clear of the portrait ring and the card bottom is not empty.
+  function drawCharacterScreen(state, selection, time) {
+    overlay(0.58);
+    ctx.save();
+    roundedRect(ctx, 40, 28, 1200, 668, 18);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'PILIH KARAKTER', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Flare tetap untuk semua — yang beda pasifnya', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
 
     for (const option of CHARACTERS) {
       const card = CHARACTER_CARDS.find((entry) => entry.id === option.id);
@@ -1721,23 +1761,24 @@ export function createRenderer(canvas) {
       ctx.restore();
       const img = portraits[option.portrait];
       if (portraitReady(img)) {
-        drawPortrait(img, cx, 400, 100, hexA(option.color, 0.30), hexA(option.color, 0.95));
+        drawPortrait(img, cx, 280, 150, hexA(option.color, 0.30), hexA(option.color, 0.95));
       } else {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, 400, 50, 0, Math.PI * 2);
+        ctx.arc(cx, 280, 75, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(12, 18, 28, 1)';
         ctx.fill();
         ctx.strokeStyle = option.color;
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.restore();
-        label(ctx, option.name[0], cx, 401, { font: `700 40px ${BODY_FONT}`, color: option.color, align: 'center', baseline: 'middle' });
+        label(ctx, option.name[0], cx, 281, { font: `700 56px ${BODY_FONT}`, color: option.color, align: 'center', baseline: 'middle' });
       }
-      label(ctx, option.name, cx, 462, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
-      label(ctx, option.tag, cx, 484, { font: `700 12px ${MONO_FONT}`, color: option.color, align: 'center', spacing: 1 });
+      label(ctx, option.name, cx, 386, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+      label(ctx, option.tag, cx, 410, { font: `700 12px ${MONO_FONT}`, color: option.color, align: 'center', spacing: 1 });
+      label(ctx, option.skill, cx, 440, { font: `700 14px ${MONO_FONT}`, color: option.color, align: 'center', spacing: 1 });
       const descLines = wrapLines(option.desc, 190, `500 13px ${BODY_FONT}`);
-      let lineY = 508;
+      let lineY = 466;
       for (const line of descLines) {
         label(ctx, line, cx, lineY, { font: `500 13px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
         lineY += 17;
@@ -1745,8 +1786,6 @@ export function createRenderer(canvas) {
       if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
     }
 
-    // MULAI MAIN — the primary action; KEMBALI below it, same as the
-    // Skill and Skin screens.
     ctx.save();
     roundedRect(ctx, START_BUTTON.x, START_BUTTON.y, START_BUTTON.w, START_BUTTON.h, 22);
     ctx.fillStyle = 'rgba(255, 207, 107, 0.16)';
@@ -2262,7 +2301,8 @@ export function createRenderer(canvas) {
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
     else if (screen === SCREEN_SKILLS) drawSkills(state, extra.badges ?? {}, time);
     else if (screen === SCREEN_SKINS) drawSkinScreen(state, extra.skin ?? 'luma', time);
-    else if (screen === SCREEN_MODE) drawModeScreen(state, extra.selection ?? { mode: 'story', character: 'luma' }, time);
+    else if (screen === SCREEN_MODE) drawModeScreen(state, extra.selection ?? { mode: 'quest', character: 'luma' }, time);
+    else if (screen === SCREEN_CHARACTER) drawCharacterScreen(state, extra.selection ?? { mode: 'endless', character: 'luma' }, time);
     else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
     else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time, extra.epilogueCard === true);
     else if (screen === SCREEN_CUTSCENE) {

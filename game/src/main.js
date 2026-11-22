@@ -8,7 +8,7 @@ import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
 import {
-  createRenderer, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  createRenderer, SCREEN_CHARACTER, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import {
   createWorld, EVENT_DEW, EVENT_HIT, EVENT_LANTERN, EVENT_NIGHT, EVENT_OVER, EVENT_SHIELD, EVENT_SPARK,
@@ -83,11 +83,11 @@ function saveSkin(value) {
 function readSelection() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(SELECT_KEY) ?? '{}') || {};
-    const mode = saved.mode === 'endless' ? 'endless' : 'story';
+    const mode = saved.mode === 'endless' ? 'endless' : 'quest';
     const character = ['luma', 'lumi', 'lulu', 'koko', 'zephyr'].includes(saved.character) ? saved.character : 'luma';
     return { mode, character };
   } catch {
-    return { mode: 'story', character: 'luma' };
+    return { mode: 'quest', character: 'luma' };
   }
 }
 
@@ -203,7 +203,7 @@ function runGame() {
     // ANDROID BUILD ONLY (v1.4.5) — the prologue plays once, before the
     // first run. The demo skips it. v1.9.0: Endless skips the prologue too —
     // it jumps straight into the night.
-    if (!demo && selection.mode === 'story' && !storySeen(PROLOGUE_KEY)) {
+    if (!demo && selection.mode === 'quest' && !storySeen(PROLOGUE_KEY)) {
       prologuePage = 0;
       screen = SCREEN_PROLOGUE;
       audio.play('start');
@@ -263,10 +263,10 @@ function runGame() {
         return;
       }
       // ANDROID BUILD ONLY (v1.9.0) — a tap or Enter on the title opens
-      // the mode + character picker instead of starting the run at once.
+      // the mode picker instead of starting the run at once.
       if (confirm || pointer) {
         screen = SCREEN_MODE;
-        announce('Pilih mode dan karakter. Enter untuk mulai main.');
+        announce('Pilih mode dulu — Quest atau Tanpa Akhir.');
       }
       return;
     }
@@ -308,31 +308,67 @@ function runGame() {
       }
       return;
     }
-    // ANDROID BUILD ONLY (v1.9.0) — mode + character picker: tap a card
-    // to choose it (saved at once); MULAI MAIN or Enter starts the run,
-    // KEMBALI or Esc returns to the title.
+    // ANDROID BUILD ONLY (v1.9.0 round 2) — mode picker: a tap on a
+    // card acts at once — QUEST starts the run as Luma, TANPA AKHIR opens
+    // the character picker. Enter uses the remembered mode; Esc returns
+    // to the title.
     if (screen === SCREEN_MODE) {
       const pos = input.pointerPos();
       if (pointer) {
-        let picked = false;
         for (const card of MODE_CARDS) {
           if (pos.x >= card.x && pos.x <= card.x + card.w && pos.y >= card.y && pos.y <= card.y + card.h) {
-            selection = { ...selection, mode: card.id };
-            saveSelection(selection);
-            announce(card.id === 'story' ? 'Mode Cerita dipilih.' : 'Mode Tanpa Akhir dipilih.');
-            picked = true;
-            break;
+            if (card.id === 'quest') {
+              selection = { mode: 'quest', character: 'luma' };
+              saveSelection(selection);
+              startRun();
+            } else {
+              selection = { ...selection, mode: 'endless' };
+              saveSelection(selection);
+              screen = SCREEN_CHARACTER;
+              announce('Pilih karakter untuk mode Tanpa Akhir. Enter untuk mulai main.');
+            }
+            return;
           }
         }
-        if (!picked) {
-          for (const card of CHARACTER_CARDS) {
-            if (pos.x >= card.x && pos.x <= card.x + card.w && pos.y >= card.y && pos.y <= card.y + card.h) {
-              selection = { ...selection, character: card.id };
-              saveSelection(selection);
-              announce(`Karakter ${card.id} dipilih.`);
-              picked = true;
-              break;
-            }
+        const onBackButton = pos.x >= BACK_BUTTON.x && pos.x <= BACK_BUTTON.x + BACK_BUTTON.w
+          && pos.y >= BACK_BUTTON.y && pos.y <= BACK_BUTTON.y + BACK_BUTTON.h;
+        if (onBackButton) {
+          screen = SCREEN_TITLE;
+          announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+          return;
+        }
+      }
+      if (confirm) {
+        if (selection.mode === 'endless') {
+          screen = SCREEN_CHARACTER;
+          announce('Pilih karakter untuk mode Tanpa Akhir. Enter untuk mulai main.');
+        } else {
+          selection = { mode: 'quest', character: 'luma' };
+          saveSelection(selection);
+          startRun();
+        }
+        return;
+      }
+      if (pause) {
+        screen = SCREEN_TITLE;
+        announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+      }
+      return;
+    }
+    // ANDROID BUILD ONLY (v1.9.0 round 2) — Endless character picker: tap
+    // a card to choose it (saved at once); MULAI MAIN or Enter starts the
+    // run, KEMBALI or Esc returns to the mode picker.
+    if (screen === SCREEN_CHARACTER) {
+      const pos = input.pointerPos();
+      if (pointer) {
+        let picked = false;
+        for (const card of CHARACTER_CARDS) {
+          if (pos.x >= card.x && pos.x <= card.x + card.w && pos.y >= card.y && pos.y <= card.y + card.h) {
+            selection = { ...selection, character: card.id };
+            saveSelection(selection);
+            announce(`Karakter ${card.id} dipilih.`);
+            picked = true;
+            break;
           }
         }
         if (!picked) {
@@ -345,8 +381,8 @@ function runGame() {
           const onBackButton = pos.x >= BACK_BUTTON.x && pos.x <= BACK_BUTTON.x + BACK_BUTTON.w
             && pos.y >= BACK_BUTTON.y && pos.y <= BACK_BUTTON.y + BACK_BUTTON.h;
           if (onBackButton) {
-            screen = SCREEN_TITLE;
-            announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+            screen = SCREEN_MODE;
+            announce('Pilih mode dulu — Quest atau Tanpa Akhir.');
             return;
           }
         }
@@ -356,8 +392,8 @@ function runGame() {
         return;
       }
       if (pause) {
-        screen = SCREEN_TITLE;
-        announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+        screen = SCREEN_MODE;
+        announce('Pilih mode dulu — Quest atau Tanpa Akhir.');
       }
       return;
     }

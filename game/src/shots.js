@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|skills|skins|modeselect|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|skins|modeselect|character|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CHARACTER, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import { TIPS } from './config.js';
 
@@ -69,13 +69,22 @@ export function stageShot(name, world, best) {
     return { screen: SCREEN_SKILLS, best };
   }
 
-  // ANDROID BUILD ONLY (v1.9.0 preview) — the mode + character picker,
-  // Story + Luma selected (the game as it is now).
+  // ANDROID BUILD ONLY (v1.9.0 preview round 2) — the mode picker,
+  // Quest remembered (the game as it is now).
   if (name === 'modeselect') {
     state.hazards = [];
     state.particles = [];
     state.dew = null;
-    return { screen: SCREEN_MODE, best, selection: { mode: 'story', character: 'luma' } };
+    return { screen: SCREEN_MODE, best, selection: { mode: 'quest', character: 'luma' } };
+  }
+
+  // ANDROID BUILD ONLY (v1.9.0 preview round 2) — the Endless character
+  // picker, Lumi selected (not the default, so the badge is exercised).
+  if (name === 'character') {
+    state.hazards = [];
+    state.particles = [];
+    state.dew = null;
+    return { screen: SCREEN_CHARACTER, best, selection: { mode: 'endless', character: 'lumi' } };
   }
 
   // ANDROID BUILD ONLY (v1.8.0) — night 1 with the first tip visible:
