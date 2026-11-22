@@ -1810,6 +1810,30 @@ export function createRenderer(canvas) {
         label(ctx, line, cx, lineY, { font: `500 13px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
         lineY += 17;
       }
+      // ANDROID BUILD ONLY (v1.9.3) — stat bars under the description:
+      // HP and Kecepatan, five segments each, filled in the hero's own
+      // colour. They sit in the band that was empty under the text.
+      let statY = 512;
+      for (const [statLabel, value] of [['HP', option.hp], ['KEC', option.speed]]) {
+        label(ctx, statLabel, card.x + 14, statY, { font: `700 11px ${MONO_FONT}`, color: C.textDim, spacing: 1 });
+        for (let seg = 0; seg < 5; seg += 1) {
+          const segX = card.x + 58 + seg * 28;
+          ctx.save();
+          roundedRect(ctx, segX, statY - 9, 24, 9, 4);
+          if (seg < value) {
+            ctx.fillStyle = option.color;
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(169, 183, 201, 0.35)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+        statY += 20;
+      }
       if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
     }
 

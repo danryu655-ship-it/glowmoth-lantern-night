@@ -116,19 +116,24 @@ export const MODE_CARDS = [
 // Flare stays for everyone; the passive is what differs. The chosen
 // character does NOT re-join on their night — they are already you.
 // The 'skill' line is the passive's name, shown on each character card.
+// ANDROID BUILD ONLY (v1.9.3) — hp / speed are DISPLAY-ONLY ratings
+// (1-5) for the character cards, from the user: HP Luma 4, Lumi 3,
+// Lulu 2, Koko 2, Zephyr 2; Kecepatan Luma 5, Lumi 2, Lulu 3, Koko 4,
+// Zephyr 3. They do not change the run: Lulu still starts with 4
+// hearts (her shield passive) and all moths fly at the same speed.
 export const CHARACTERS = [
-  { id: 'luma', name: 'LUMA', tag: 'SEIMBANG', skill: 'FLARE BURST', portrait: 'luma', color: '#f59e0b', desc: 'Seimbang. Flare seperti biasa.' },
-  { id: 'lumi', name: 'LUMI', tag: 'MAGNET', skill: 'MOTE MAGNET', portrait: 'lumi', color: '#8ff0d0', desc: 'Kunang ketarik dari jauh sejak malam 1.' },
-  { id: 'lulu', name: 'LULU', tag: 'PELINDUNG', skill: "LULU'S SHIELD", portrait: 'lulu', color: '#8ecbff', desc: 'Mulai 4 hati + perisai tiap 60 detik.' },
-  { id: 'koko', name: 'KOKO', tag: 'PENYERANG', skill: 'KOKO EMBER', portrait: 'companionKoko', color: '#fb923c', desc: 'Bakar 1 shade terdekat tiap 8 detik.' },
-  { id: 'zephyr', name: 'ZEPHYR', tag: 'CEPAT', skill: 'ZEPHYR DRIFT', portrait: 'companionZephyr', color: '#c084fc', desc: 'Semua bahaya 25% lebih lambat.' },
+  { id: 'luma', name: 'LUMA', tag: 'SEIMBANG', skill: 'FLARE BURST', portrait: 'luma', color: '#f59e0b', hp: 4, speed: 5, desc: 'Seimbang. Flare seperti biasa.' },
+  { id: 'lumi', name: 'LUMI', tag: 'MAGNET', skill: 'MOTE MAGNET', portrait: 'lumi', color: '#8ff0d0', hp: 3, speed: 2, desc: 'Kunang ketarik dari jauh sejak malam 1.' },
+  { id: 'lulu', name: 'LULU', tag: 'PELINDUNG', skill: "LULU'S SHIELD", portrait: 'lulu', color: '#8ecbff', hp: 2, speed: 3, desc: 'Mulai 4 hati + perisai tiap 60 detik.' },
+  { id: 'koko', name: 'KOKO', tag: 'PENYERANG', skill: 'KOKO EMBER', portrait: 'companionKoko', color: '#fb923c', hp: 2, speed: 4, desc: 'Bakar 1 shade terdekat tiap 8 detik.' },
+  { id: 'zephyr', name: 'ZEPHYR', tag: 'CEPAT', skill: 'ZEPHYR DRIFT', portrait: 'companionZephyr', color: '#c084fc', hp: 2, speed: 3, desc: 'Semua bahaya 25% lebih lambat.' },
 ];
 export const CHARACTER_CARDS = [
-  { id: 'luma', x: 85, y: 150, w: 210, h: 380 },
-  { id: 'lumi', x: 310, y: 150, w: 210, h: 380 },
-  { id: 'lulu', x: 535, y: 150, w: 210, h: 380 },
-  { id: 'koko', x: 760, y: 150, w: 210, h: 380 },
-  { id: 'zephyr', x: 985, y: 150, w: 210, h: 380 },
+  { id: 'luma', x: 85, y: 150, w: 210, h: 396 },
+  { id: 'lumi', x: 310, y: 150, w: 210, h: 396 },
+  { id: 'lulu', x: 535, y: 150, w: 210, h: 396 },
+  { id: 'koko', x: 760, y: 150, w: 210, h: 396 },
+  { id: 'zephyr', x: 985, y: 150, w: 210, h: 396 },
 ];
 export const START_BUTTON = { x: 490, y: 560, w: 300, h: 44 };
 // ANDROID BUILD ONLY (v1.9.1) — the in-game HUD buttons, in a row right
