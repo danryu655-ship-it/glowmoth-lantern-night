@@ -100,12 +100,13 @@ export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
 // bosses and companions still show up. The last pick is remembered.
 export const SELECT_KEY = 'glowmoth.select.v1';
 // ANDROID BUILD ONLY (v1.9.0 round 2) — the mode is picked FIRST, on its
-// own screen. QUEST is the story as it is now (Luma, prologue, dawn
-// stories, companions joining, epilogue); TANPA AKHIR goes to the
-// character picker and then plays with no story beats. The 'feat' line
-// is the one-line summary under each card's description.
+// own screen. QUEST is the story as it is now (prologue, dawn stories,
+// companions joining, epilogue), played with the chosen hero (v1.9.5:
+// before, Quest always played as Luma); TANPA AKHIR picks a character
+// too and then plays with no story beats. The 'feat' line is the
+// one-line summary under each card's description.
 export const MODES = [
-  { id: 'quest', name: 'QUEST', tag: 'ALUR CERITA', color: '#ffd54f', desc: 'Alur cerita seperti sekarang — prolog, cerita fajar, teman bergabung, dan epilog.', feat: 'LUMA · PROLOG · 15 MOMEN CERITA' },
+  { id: 'quest', name: 'QUEST', tag: 'ALUR CERITA', color: '#ffd54f', desc: 'Alur cerita seperti sekarang — prolog, cerita fajar, teman bergabung, dan epilog.', feat: '5 KARAKTER · PROLOG · 15 MOMEN CERITA' },
   { id: 'endless', name: 'TANPA AKHIR', tag: 'MAIN SAMPAI BOSAN', color: '#8ff0d0', desc: 'Pilih karakter dulu, lalu main tanpa potongan cerita. Malam jalan terus.', feat: '5 KARAKTER · TANPA CERITA · MALAM TANPA AKHIR' },
 ];
 export const MODE_CARDS = [
@@ -116,11 +117,11 @@ export const MODE_CARDS = [
 // Flare stays for everyone; the passive is what differs. The chosen
 // character does NOT re-join on their night — they are already you.
 // The 'skill' line is the passive's name, shown on each character card.
-// ANDROID BUILD ONLY (v1.9.3) — hp / speed are DISPLAY-ONLY ratings
-// (1-5) for the character cards, from the user: HP Luma 4, Lumi 3,
-// Lulu 2, Koko 2, Zephyr 2; Kecepatan Luma 5, Lumi 2, Lulu 3, Koko 4,
-// Zephyr 3. They do not change the run: Lulu still starts with 4
-// hearts (her shield passive) and all moths fly at the same speed.
+// ANDROID BUILD ONLY (v1.9.3) — hp / speed ratings (1-5) for the
+// character cards, from the user: HP Luma 4, Lumi 3, Lulu 2, Koko 2,
+// Zephyr 2; Kecepatan Luma 5, Lumi 2, Lulu 3, Koko 4, Zephyr 3.
+// ANDROID BUILD ONLY (v1.9.4) — they are REAL now, not display-only:
+// hearts come from hp and the speed stat scales the top speed.
 export const CHARACTERS = [
   { id: 'luma', name: 'LUMA', tag: 'SEIMBANG', skill: 'FLARE BURST', portrait: 'luma', color: '#f59e0b', hp: 4, speed: 5, desc: 'Seimbang. Flare seperti biasa.' },
   { id: 'lumi', name: 'LUMI', tag: 'MAGNET', skill: 'MOTE MAGNET', portrait: 'lumi', color: '#8ff0d0', hp: 3, speed: 2, desc: 'Kunang ketarik dari jauh sejak malam 1.' },
@@ -301,6 +302,11 @@ export const COMPANION = {
   kokoScorchRange: 420,
   zephyrSlow: 0.75,
 };
+
+// ANDROID BUILD ONLY (v1.9.5) — which companion is freed on each join
+// night (Lumi 3, Lulu 6, Koko 9, Zephyr 12). The dawn card and the
+// rescue cutscene skip the companion that IS the player.
+export const JOIN_NIGHTS = { 3: 'lumi', 6: 'lulu', 9: 'koko', 12: 'zephyr' };
 
 export const BOSS = {
   every: 10,
