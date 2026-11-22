@@ -131,6 +131,21 @@ export const CHARACTER_CARDS = [
   { id: 'zephyr', x: 985, y: 150, w: 210, h: 380 },
 ];
 export const START_BUTTON = { x: 490, y: 560, w: 300, h: 44 };
+// ANDROID BUILD ONLY (v1.9.1) — the in-game HUD buttons, in a row right
+// under the top bar (y 100-134), directly below the LIVES / FLARE
+// cluster. JEDA pauses, ULANG restarts the run, MENU goes to the title.
+// A tap on one never fires a Flare (main.js checks them first).
+export const HUD_BUTTONS = {
+  menu: { x: 1046, y: 100, w: 64, h: 34 },
+  restart: { x: 1118, y: 100, w: 72, h: 34 },
+  pause: { x: 1198, y: 100, w: 60, h: 34 },
+};
+// ANDROID BUILD ONLY (v1.9.1) — the pause screen's own buttons.
+export const PAUSE_BUTTONS = {
+  resume: { x: 490, y: 450, w: 300, h: 44 },
+  restart: { x: 490, y: 506, w: 300, h: 44 },
+  menu: { x: 490, y: 562, w: 300, h: 44 },
+};
 
 // ANDROID BUILD ONLY (v1.6.0) — moth skins, picked on the title screen.
 // The portraits are the user's own SVGs (Golden Sun, Cyber Neon); the

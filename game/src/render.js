@@ -3,7 +3,7 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, LANTERN, MODE_CARDS, MODES, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, HUD_BUTTONS, LANTERN, MODE_CARDS, MODES, PALETTE as C, PAUSE_BUTTONS, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
@@ -1307,6 +1307,22 @@ export function createRenderer(canvas) {
     }
     label(ctx, 'FLARE', W - 90, 84, { font: `600 10px ${MONO_FONT}`, color: C.textDim, spacing: 2 });
 
+    // ANDROID BUILD ONLY (v1.9.1) — JEDA / ULANG / MENU, right under the
+    // top bar below the LIVES / FLARE cluster. Small dark pills with a
+    // gold edge, like the KEMBALI button; the game field shows through
+    // below them, so they sit over the meadow, not over the HUD bar.
+    for (const [text, rect] of [['MENU', HUD_BUTTONS.menu], ['ULANG', HUD_BUTTONS.restart], ['JEDA', HUD_BUTTONS.pause]]) {
+      ctx.save();
+      roundedRect(ctx, rect.x, rect.y, rect.w, rect.h, 17);
+      ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, text, rect.x + rect.w / 2, rect.y + rect.h / 2 + 5, { font: `700 13px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+    }
+
     label(ctx, 'LEFT THUMB: JOYSTICK TO FLY   ·   TAP TO FLARE', W / 2, H - 14, {
       font: `500 12px ${MONO_FONT}`,
       color: 'rgba(169, 183, 201, 0.6)',
@@ -2257,11 +2273,26 @@ export function createRenderer(canvas) {
     void time;
   }
 
+  // ANDROID BUILD ONLY (v1.9.1) — the pause screen has real buttons
+  // now (before, only P / Enter resumed, and there was no way to restart
+  // or quit mid-run on a phone). LANJUTKAN is the gold one; a tap anywhere
+  // else on the screen still resumes, as before.
   function drawPaused(state) {
     overlay(0.66);
     label(ctx, 'PAUSED', W / 2, 300, { font: `700 58px ${TITLE_FONT}`, color: C.mint, align: 'center', spacing: 8 });
     label(ctx, 'The meadow holds its breath.', W / 2, 346, { font: `italic 500 22px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center' });
-    label(ctx, 'PRESS P OR ENTER TO CONTINUE', W / 2, 420, { font: `600 15px ${MONO_FONT}`, color: C.amber, align: 'center', spacing: 2 });
+    for (const [text, rect, primary] of [['LANJUTKAN', PAUSE_BUTTONS.resume, true], ['ULANGI', PAUSE_BUTTONS.restart, false], ['MENU UTAMA', PAUSE_BUTTONS.menu, false]]) {
+      ctx.save();
+      roundedRect(ctx, rect.x, rect.y, rect.w, rect.h, 22);
+      ctx.fillStyle = primary ? 'rgba(255, 207, 107, 0.16)' : 'rgba(5, 8, 14, 0.72)';
+      ctx.fill();
+      ctx.strokeStyle = primary ? 'rgba(255, 207, 107, 0.95)' : 'rgba(255, 207, 107, 0.5)';
+      ctx.lineWidth = primary ? 2 : 1.4;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, text, rect.x + rect.w / 2, rect.y + rect.h / 2 + 6, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 2 });
+    }
+    label(ctx, 'P / ENTER — LANJUTKAN', W / 2, 640, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
     void state;
   }
 

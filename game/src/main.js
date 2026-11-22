@@ -3,7 +3,7 @@
 // and victory. ?shot=title|skills|modeselect|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, LANTERN, MODE_CARDS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
+import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, HUD_BUTTONS, LANTERN, MODE_CARDS, PAUSE_BUTTONS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
@@ -467,7 +467,33 @@ function runGame() {
       }
       return;
     }
+    // ANDROID BUILD ONLY (v1.9.1) — the pause screen's buttons:
+    // LANJUTKAN resumes, ULANGI restarts the run, MENU UTAMA goes to the
+    // title. A tap anywhere else still resumes, as before.
     if (screen === SCREEN_PAUSED) {
+      const pos = input.pointerPos();
+      if (pointer) {
+        const onResumeButton = pos.x >= PAUSE_BUTTONS.resume.x && pos.x <= PAUSE_BUTTONS.resume.x + PAUSE_BUTTONS.resume.w
+          && pos.y >= PAUSE_BUTTONS.resume.y && pos.y <= PAUSE_BUTTONS.resume.y + PAUSE_BUTTONS.resume.h;
+        if (onResumeButton) {
+          screen = SCREEN_PLAY;
+          announce('Playing.');
+          return;
+        }
+        const onRestartButton = pos.x >= PAUSE_BUTTONS.restart.x && pos.x <= PAUSE_BUTTONS.restart.x + PAUSE_BUTTONS.restart.w
+          && pos.y >= PAUSE_BUTTONS.restart.y && pos.y <= PAUSE_BUTTONS.restart.y + PAUSE_BUTTONS.restart.h;
+        if (onRestartButton) {
+          startRun();
+          return;
+        }
+        const onMenuButton = pos.x >= PAUSE_BUTTONS.menu.x && pos.x <= PAUSE_BUTTONS.menu.x + PAUSE_BUTTONS.menu.w
+          && pos.y >= PAUSE_BUTTONS.menu.y && pos.y <= PAUSE_BUTTONS.menu.y + PAUSE_BUTTONS.menu.h;
+        if (onMenuButton) {
+          screen = SCREEN_TITLE;
+          announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+          return;
+        }
+      }
       if (confirm || pointer) {
         screen = SCREEN_PLAY;
         announce('Playing.');
@@ -475,6 +501,31 @@ function runGame() {
       return;
     }
     if (screen === SCREEN_PLAY) {
+      // ANDROID BUILD ONLY (v1.9.1) — the HUD buttons, checked BEFORE the
+      // flare: a tap on JEDA / ULANG / MENU must never fire a Flare.
+      if (pointer) {
+        const pos = input.pointerPos();
+        const onPauseButton = pos.x >= HUD_BUTTONS.pause.x && pos.x <= HUD_BUTTONS.pause.x + HUD_BUTTONS.pause.w
+          && pos.y >= HUD_BUTTONS.pause.y && pos.y <= HUD_BUTTONS.pause.y + HUD_BUTTONS.pause.h;
+        if (onPauseButton) {
+          screen = SCREEN_PAUSED;
+          announce('Paused.');
+          return;
+        }
+        const onRestartButton = pos.x >= HUD_BUTTONS.restart.x && pos.x <= HUD_BUTTONS.restart.x + HUD_BUTTONS.restart.w
+          && pos.y >= HUD_BUTTONS.restart.y && pos.y <= HUD_BUTTONS.restart.y + HUD_BUTTONS.restart.h;
+        if (onRestartButton) {
+          startRun();
+          return;
+        }
+        const onMenuButton = pos.x >= HUD_BUTTONS.menu.x && pos.x <= HUD_BUTTONS.menu.x + HUD_BUTTONS.menu.w
+          && pos.y >= HUD_BUTTONS.menu.y && pos.y <= HUD_BUTTONS.menu.y + HUD_BUTTONS.menu.h;
+        if (onMenuButton) {
+          screen = SCREEN_TITLE;
+          announce('Glowmoth: Lantern Night. Press Enter or click to fly.');
+          return;
+        }
+      }
       if (input.consume('flare') || pointer) {
         audio.unlock();
         if (world.flare()) {

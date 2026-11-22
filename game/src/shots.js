@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|skills|skins|modeselect|character|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|skins|modeselect|character|tips|play|paused|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CHARACTER, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CHARACTER, SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import { TIPS } from './config.js';
 
@@ -202,6 +202,29 @@ export function stageShot(name, world, best) {
     burst(state, rand, 596, 452, { count: 12, colors: ['#ffcf6b', '#fff3c9', '#8ff0d0'], speed: 130, life: 0.66, size: 2.6, gravity: 18 });
     burst(state, rand, 520, 340, { count: 10, colors: ['rgba(143, 240, 208, 0.8)', 'rgba(255, 243, 201, 0.7)'], speed: 80, life: 0.8, size: 2, gravity: -10 });
     return { screen: SCREEN_PLAY, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.9.1 preview) — the pause screen, staged on the
+  // same night-2 state as ?shot=play so the HUD shows behind it.
+  if (name === 'paused') {
+    state.night = 2;
+    state.score = 1480;
+    state.lives = 2;
+    state.sparks = 1;
+    state.sparkCharge = 3;
+    state.chain = 7;
+    state.combo = 2;
+    state.comboTimer = 2.1;
+    state.progress = 4;
+    state.motesCollected = 19;
+    state.peakCombo = 3;
+    lightLanterns(state, 2);
+    state.lanterns[0].pulse = 0;
+    state.lanterns[1].pulse = 0;
+    state.hazards = [];
+    state.particles = [];
+    state.dew = null;
+    return { screen: SCREEN_PAUSED, best };
   }
 
   if (name === 'dawn') {
