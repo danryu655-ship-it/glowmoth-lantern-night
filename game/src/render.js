@@ -2292,7 +2292,7 @@ export function createRenderer(canvas) {
       ctx.restore();
       label(ctx, text, rect.x + rect.w / 2, rect.y + rect.h / 2 + 6, { font: `700 16px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 2 });
     }
-    label(ctx, 'P / ENTER — LANJUTKAN', W / 2, 640, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+    label(ctx, 'P / ENTER — LANJUTKAN', W / 2, 420, { font: `600 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
     void state;
   }
 
