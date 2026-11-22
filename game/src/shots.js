@@ -1,4 +1,4 @@
-// The staged frames behind ?shot=title|skills|skins|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
+// The staged frames behind ?shot=title|skills|skins|modeselect|tips|play|dawn|victory|over|cutscene3|cutscene6|cutsceneBoss|card3|queen|scorpion|prologue|epilogue.
 // the real world object filled with a hand-placed state and the real renderer, not a mock-up: the
 // same code that draws a live game paints these frames, so the screenshots show the game's own
 // art and HUD.
@@ -6,7 +6,7 @@
 import { createRandom } from './random.js';
 import { burst } from './particles.js';
 import {
-  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
+  SCREEN_CUTSCENE, SCREEN_DAWN, SCREEN_EPILOGUE, SCREEN_MODE, SCREEN_OVER, SCREEN_PLAY, SCREEN_PROLOGUE, SCREEN_SKILLS, SCREEN_SKINS, SCREEN_TITLE, SCREEN_VICTORY,
 } from './render.js';
 import { TIPS } from './config.js';
 
@@ -67,6 +67,15 @@ export function stageShot(name, world, best) {
     state.hazards = [];
     state.particles = [];
     return { screen: SCREEN_SKILLS, best };
+  }
+
+  // ANDROID BUILD ONLY (v1.9.0 preview) — the mode + character picker,
+  // Story + Luma selected (the game as it is now).
+  if (name === 'modeselect') {
+    state.hazards = [];
+    state.particles = [];
+    state.dew = null;
+    return { screen: SCREEN_MODE, best, selection: { mode: 'story', character: 'luma' } };
   }
 
   // ANDROID BUILD ONLY (v1.8.0) — night 1 with the first tip visible:

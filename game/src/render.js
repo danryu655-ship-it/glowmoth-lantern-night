@@ -3,12 +3,13 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, BOSS_KINDS, CUTSCENE, CUTSCENES, FIELD, LANTERN, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, LANTERN, MODE_CARDS, MODES, PALETTE as C, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_SKILLS = 'skills';
 export const SCREEN_SKINS = 'skins';
+export const SCREEN_MODE = 'mode';
 export const SCREEN_PLAY = 'play';
 export const SCREEN_PAUSED = 'paused';
 export const SCREEN_DAWN = 'dawn';
@@ -1655,6 +1656,148 @@ export function createRenderer(canvas) {
     void time;
   }
 
+  // ANDROID BUILD ONLY (v1.9.0) — mode + character select. Tap a card
+  // to choose it (saved at once); MULAI MAIN or Enter starts the run,
+  // KEMBALI or Esc returns to the title. Portraits are the game's own
+  // art (luma/lumi/lulu jpgs, koko/zephyr SVGs); until one loads, a
+  // coloured ring + letter stands in, like the Skill screen.
+  function drawModeScreen(state, selection, time) {
+    overlay(0.58);
+    ctx.save();
+    roundedRect(ctx, 40, 28, 1200, 668, 18);
+    ctx.fillStyle = C.panel;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'PILIH MODE & KARAKTER', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
+    label(ctx, 'Mode cerita seperti sekarang, atau main tanpa akhir — lalu pilih siapa yang terbang', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+
+    for (const mode of MODES) {
+      const card = MODE_CARDS.find((entry) => entry.id === mode.id);
+      const cx = card.x + card.w / 2;
+      const selected = selection.mode === mode.id;
+      ctx.save();
+      roundedRect(ctx, card.x, card.y, card.w, card.h, 18);
+      ctx.fillStyle = selected ? 'rgba(255, 207, 107, 0.14)' : 'rgba(5, 8, 14, 0.5)';
+      ctx.fill();
+      ctx.strokeStyle = selected ? 'rgba(255, 207, 107, 0.95)' : 'rgba(169, 183, 201, 0.35)';
+      ctx.lineWidth = selected ? 2.5 : 1.4;
+      ctx.stroke();
+      ctx.restore();
+      label(ctx, mode.name, cx, card.y + 46, { font: `700 26px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+      label(ctx, mode.tag, cx, card.y + 72, { font: `700 12px ${MONO_FONT}`, color: mode.color, align: 'center', spacing: 1 });
+      const descLines = wrapLines(mode.desc, 420, `500 15px ${BODY_FONT}`);
+      let lineY = card.y + 100;
+      for (const line of descLines) {
+        label(ctx, line, cx, lineY, { font: `500 15px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
+        lineY += 20;
+      }
+      if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(120, 292);
+    ctx.lineTo(W - 120, 292);
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'PILIH KARAKTER  —  FLARE TETAP UNTUK SEMUA, YANG BEDA PASIFNYA', W / 2, 320, { font: `700 12px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 2 });
+
+    for (const option of CHARACTERS) {
+      const card = CHARACTER_CARDS.find((entry) => entry.id === option.id);
+      const cx = card.x + card.w / 2;
+      const selected = selection.character === option.id;
+      ctx.save();
+      roundedRect(ctx, card.x, card.y, card.w, card.h, 18);
+      ctx.fillStyle = selected ? 'rgba(255, 207, 107, 0.14)' : 'rgba(5, 8, 14, 0.5)';
+      ctx.fill();
+      ctx.strokeStyle = selected ? 'rgba(255, 207, 107, 0.95)' : 'rgba(169, 183, 201, 0.35)';
+      ctx.lineWidth = selected ? 2.5 : 1.4;
+      ctx.stroke();
+      ctx.restore();
+      const img = portraits[option.portrait];
+      if (portraitReady(img)) {
+        drawPortrait(img, cx, 400, 100, hexA(option.color, 0.30), hexA(option.color, 0.95));
+      } else {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, 400, 50, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(12, 18, 28, 1)';
+        ctx.fill();
+        ctx.strokeStyle = option.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+        label(ctx, option.name[0], cx, 401, { font: `700 40px ${BODY_FONT}`, color: option.color, align: 'center', baseline: 'middle' });
+      }
+      label(ctx, option.name, cx, 462, { font: `700 19px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 1 });
+      label(ctx, option.tag, cx, 484, { font: `700 12px ${MONO_FONT}`, color: option.color, align: 'center', spacing: 1 });
+      const descLines = wrapLines(option.desc, 190, `500 13px ${BODY_FONT}`);
+      let lineY = 508;
+      for (const line of descLines) {
+        label(ctx, line, cx, lineY, { font: `500 13px ${BODY_FONT}`, color: 'rgba(220, 228, 238, 0.95)', align: 'center' });
+        lineY += 17;
+      }
+      if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
+    }
+
+    // MULAI MAIN — the primary action; KEMBALI below it, same as the
+    // Skill and Skin screens.
+    ctx.save();
+    roundedRect(ctx, START_BUTTON.x, START_BUTTON.y, START_BUTTON.w, START_BUTTON.h, 22);
+    ctx.fillStyle = 'rgba(255, 207, 107, 0.16)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.95)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, 'MULAI MAIN', START_BUTTON.x + START_BUTTON.w / 2, START_BUTTON.y + START_BUTTON.h / 2 + 6, { font: `700 18px ${MONO_FONT}`, color: C.cream, align: 'center', spacing: 2 });
+
+    ctx.save();
+    roundedRect(ctx, BACK_BUTTON.x, BACK_BUTTON.y, BACK_BUTTON.w, BACK_BUTTON.h, 19);
+    ctx.fillStyle = 'rgba(5, 8, 14, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 207, 107, 0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+    const backCx = BACK_BUTTON.x + BACK_BUTTON.w / 2;
+    const backCy = BACK_BUTTON.y + BACK_BUTTON.h / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backCx - 38, backCy);
+    ctx.lineTo(backCx - 28, backCy - 7);
+    ctx.lineTo(backCx - 28, backCy + 7);
+    ctx.closePath();
+    ctx.fillStyle = C.cream;
+    ctx.fill();
+    ctx.restore();
+    label(ctx, 'KEMBALI', backCx + 10, backCy + 5, { font: `700 14px ${MONO_FONT}`, color: C.cream, align: 'center' });
+    void state;
+    void time;
+  }
+
+  // Gold circle with a check mark, marking the selected card.
+  function drawCheckBadge(x, y) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 13, 0, Math.PI * 2);
+    ctx.fillStyle = C.amber;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(5, 8, 14, 0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 5, y);
+    ctx.lineTo(x - 1, y + 4);
+    ctx.lineTo(x + 6, y - 4);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawButton(text, y) {
     roundedRect(ctx, W / 2 - 260, y - 28, 520, 54, 27);
     ctx.fillStyle = 'rgba(255, 207, 107, 0.09)';
@@ -2119,6 +2262,7 @@ export function createRenderer(canvas) {
     if (screen === SCREEN_TITLE) drawTitle(state, best, time, extra.demo === true);
     else if (screen === SCREEN_SKILLS) drawSkills(state, extra.badges ?? {}, time);
     else if (screen === SCREEN_SKINS) drawSkinScreen(state, extra.skin ?? 'luma', time);
+    else if (screen === SCREEN_MODE) drawModeScreen(state, extra.selection ?? { mode: 'story', character: 'luma' }, time);
     else if (screen === SCREEN_PROLOGUE) drawPrologueScreen(state, extra.prologuePage ?? 0, time);
     else if (screen === SCREEN_EPILOGUE) drawEpilogueScreen(state, extra.epiloguePage ?? 0, time, extra.epilogueCard === true);
     else if (screen === SCREEN_CUTSCENE) {
