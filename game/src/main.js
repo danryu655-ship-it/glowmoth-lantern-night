@@ -3,7 +3,7 @@
 // and victory. ?shot=title|skills|modeselect|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, HUD_BUTTONS, JOIN_NIGHTS, LANTERN, MODE_CARDS, PAUSE_BUTTONS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
+import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, HUD_BUTTONS, LANTERN, MODE_CARDS, PAUSE_BUTTONS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
@@ -314,19 +314,19 @@ function runGame() {
       return;
     }
     // ANDROID BUILD ONLY (v1.9.0 round 2) — mode picker: a tap on a
-    // card opens the character picker for that mode (v1.9.5: QUEST picks
-    // a hero too — before, it started the run at once as Luma). Enter
-    // uses the remembered mode; Esc returns to the title.
+    // card acts at once — QUEST starts the run as Luma, TANPA AKHIR opens
+    // the character picker. Enter uses the remembered mode; Esc returns
+    // to the title. (v1.9.6: the v1.9.5 Quest picker was reverted — the
+    // mission is Luma rescuing Lumi and Lulu.)
     if (screen === SCREEN_MODE) {
       const pos = input.pointerPos();
       if (pointer) {
         for (const card of MODE_CARDS) {
           if (pos.x >= card.x && pos.x <= card.x + card.w && pos.y >= card.y && pos.y <= card.y + card.h) {
             if (card.id === 'quest') {
-              selection = { ...selection, mode: 'quest' };
+              selection = { mode: 'quest', character: 'luma' };
               saveSelection(selection);
-              screen = SCREEN_CHARACTER;
-              announce('Pilih karakter untuk mode Quest. Enter untuk mulai main.');
+              startRun();
             } else {
               selection = { ...selection, mode: 'endless' };
               saveSelection(selection);
@@ -345,10 +345,14 @@ function runGame() {
         }
       }
       if (confirm) {
-        screen = SCREEN_CHARACTER;
-        announce(selection.mode === 'endless'
-          ? 'Pilih karakter untuk mode Tanpa Akhir. Enter untuk mulai main.'
-          : 'Pilih karakter untuk mode Quest. Enter untuk mulai main.');
+        if (selection.mode === 'endless') {
+          screen = SCREEN_CHARACTER;
+          announce('Pilih karakter untuk mode Tanpa Akhir. Enter untuk mulai main.');
+        } else {
+          selection = { mode: 'quest', character: 'luma' };
+          saveSelection(selection);
+          startRun();
+        }
         return;
       }
       if (pause) {
@@ -357,10 +361,9 @@ function runGame() {
       }
       return;
     }
-    // ANDROID BUILD ONLY (v1.9.0 round 2) — character picker (v1.9.5: for
-    // Quest too, not just Endless): tap a card to choose it (saved at
-    // once); MULAI MAIN or Enter starts the run, KEMBALI or Esc returns
-    // to the mode picker.
+    // ANDROID BUILD ONLY (v1.9.0 round 2) — Endless character picker: tap
+    // a card to choose it (saved at once); MULAI MAIN or Enter starts the
+    // run, KEMBALI or Esc returns to the mode picker.
     if (screen === SCREEN_CHARACTER) {
       const pos = input.pointerPos();
       if (pointer) {
@@ -618,9 +621,7 @@ function runGame() {
       if (!ENDLESS && world.state.night >= RUN.nightsToWin) finishRun(true);
       // ANDROID BUILD ONLY (v1.4.4) — after night 3 (Lumi freed) and night 6
       // (Lulu freed) the dawn cutscene plays before the dawn card.
-      // ANDROID BUILD ONLY (v1.9.5) — not when the freed companion IS the
-      // player: they were never captured, so there is nothing to free.
-      else if (ENDLESS && selection.mode === 'quest' && CUTSCENES[world.state.night] && JOIN_NIGHTS[world.state.night] !== selection.character) {
+      else if (ENDLESS && selection.mode === 'quest' && CUTSCENES[world.state.night]) {
         // ANDROID BUILD ONLY (v1.6.0) — the illustration card comes first.
         const cardForNight = { 3: 'cardNight3', 6: 'cardNight6' };
         cutscene = { night: world.state.night, beat: 0, beatTime: 0, card: cardForNight[world.state.night] ?? null, cardDone: false };

@@ -3,7 +3,7 @@
 // work on one canvas, with no image or font file anywhere.
 
 import {
-  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTER_PALETTES, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, HUD_BUTTONS, JOIN_NIGHTS, LANTERN, MODE_CARDS, MODES, PALETTE as C, PAUSE_BUTTONS, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
+  BACK_BUTTON, BOSS, BOSS_KINDS, CHARACTER_CARDS, CHARACTER_PALETTES, CHARACTERS, CUTSCENE, CUTSCENES, FIELD, HUD_BUTTONS, LANTERN, MODE_CARDS, MODES, PALETTE as C, PAUSE_BUTTONS, RUN, SHIELD, SKILL_BUTTON, SKILL_GUIDE, BADGE_GUIDE, START_BUTTON, STRINGS, SKIN_BUTTON, SKIN_CARDS, SKINS, SKIN_PALETTES, bossKind,
 } from './config.js';
 
 export const SCREEN_TITLE = 'title';
@@ -1726,7 +1726,7 @@ export function createRenderer(canvas) {
       if (selected) drawCheckBadge(card.x + card.w - 26, card.y + 26);
     }
 
-    label(ctx, 'Ketuk QUEST atau TANPA AKHIR — lalu pilih karaktermu', W / 2, 500, { font: `500 15px ${BODY_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center' });
+    label(ctx, 'Ketuk QUEST untuk langsung main sebagai Luma  ·  ketuk TANPA AKHIR untuk pilih karakter', W / 2, 500, { font: `500 15px ${BODY_FONT}`, color: 'rgba(247, 241, 220, 0.85)', align: 'center' });
     const lastMode = MODES.find((m) => m.id === selection.mode) ?? MODES[0];
     const lastChar = CHARACTERS.find((c) => c.id === selection.character) ?? CHARACTERS[0];
     label(ctx, `Terakhir dimainkan: ${lastMode.name} · ${lastChar.name}`, W / 2, 540, { font: `700 13px ${MONO_FONT}`, color: C.textDim, align: 'center', spacing: 1 });
@@ -1772,9 +1772,7 @@ export function createRenderer(canvas) {
     ctx.stroke();
     ctx.restore();
     label(ctx, 'PILIH KARAKTER', W / 2, 62, { font: `700 42px ${TITLE_FONT}`, color: C.amber, align: 'center', spacing: 4, glow: 22, glowColor: 'rgba(255, 207, 107, 0.5)' });
-    // ANDROID BUILD ONLY (v1.9.5) — the subtitle names the mode, so the
-    // player knows which run they are picking a hero for.
-    label(ctx, selection.mode === 'quest' ? 'Pilih karakter untuk mode Quest — yang beda pasifnya' : 'Flare tetap untuk semua — yang beda pasifnya', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
+    label(ctx, 'Flare tetap untuk semua — yang beda pasifnya', W / 2, 100, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
 
     for (const option of CHARACTERS) {
       const card = CHARACTER_CARDS.find((entry) => entry.id === option.id);
@@ -2090,20 +2088,6 @@ export function createRenderer(canvas) {
   // once before the first run, in two pages: the world, then Dark Pekat's
   // tragedy. Epilogue: the dawn of victory, shown once when the boss
   // first falls.
-  // ANDROID BUILD ONLY (v1.9.5) — the prologue is Luma's story; when
-  // another hero fights Quest, its last paragraph names them instead,
-  // and a captured companion that IS the hero is not listed as
-  // captured. Luma's own text is untouched.
-  function prologueHeroLine(text, hero) {
-    if (hero === 'luma') return text;
-    const names = { lumi: 'Lumi', lulu: 'Lulu', koko: 'Koko', zephyr: 'Zephyr' };
-    const name = names[hero] ?? 'Luma';
-    let adapted = text.replace('Luma seorang diri', `${name} seorang diri`);
-    if (hero === 'lumi') adapted = adapted.replace('Lumi dan Lulu tertangkap', 'Lulu tertangkap');
-    if (hero === 'lulu') adapted = adapted.replace('Lumi dan Lulu tertangkap', 'Lumi tertangkap');
-    return adapted;
-  }
-
   function drawPrologueScreen(state, page, time) {
     const pages = STRINGS.prologue;
     const pageIndex = Math.max(0, Math.min(page ?? 0, pages.length - 1));
@@ -2126,11 +2110,8 @@ export function createRenderer(canvas) {
     ctx.fillStyle = C.panel;
     ctx.fill();
     ctx.restore();
-    const paragraphs = pageIndex === 1
-      ? pages[pageIndex].map((paragraph, index) => (index === 2 ? prologueHeroLine(paragraph, character) : paragraph))
-      : pages[pageIndex];
     let y = 222;
-    for (const paragraph of paragraphs) {
+    for (const paragraph of pages[pageIndex]) {
       const lines = wrapLines(paragraph, 920, `italic 500 19px ${TITLE_FONT}`);
       for (const line of lines) {
         label(ctx, line, W / 2, y, { font: `italic 500 19px ${TITLE_FONT}`, color: 'rgba(247, 241, 220, 0.92)', align: 'center' });
@@ -2304,10 +2285,7 @@ export function createRenderer(canvas) {
     // Everything below the story shifts down with the line count.
     // ANDROID BUILD ONLY (v1.9.0) — Endless shows a neutral line, never
     // the Kronik line (it would name rescues that never happened).
-    // ANDROID BUILD ONLY (v1.9.5) — so does a Quest night whose rescued
-    // companion IS the player (the Kronik line would say they were just
-    // freed).
-    const dawnStory = state.mode === 'endless' || JOIN_NIGHTS[state.night] === state.character
+    const dawnStory = state.mode === 'endless'
       ? `Malam ${state.night} berlalu. Taman kembali tenang — untuk sesaat.`
       : state.night <= STRINGS.dawnStory.length
         ? STRINGS.dawnStory[state.night - 1]

@@ -100,13 +100,15 @@ export const BACK_BUTTON = { x: 550, y: 662, w: 180, h: 38 };
 // bosses and companions still show up. The last pick is remembered.
 export const SELECT_KEY = 'glowmoth.select.v1';
 // ANDROID BUILD ONLY (v1.9.0 round 2) — the mode is picked FIRST, on its
-// own screen. QUEST is the story as it is now (prologue, dawn stories,
-// companions joining, epilogue), played with the chosen hero (v1.9.5:
-// before, Quest always played as Luma); TANPA AKHIR picks a character
-// too and then plays with no story beats. The 'feat' line is the
-// one-line summary under each card's description.
+// own screen. QUEST is the story as it is now (Luma, prologue, dawn
+// stories, companions joining, epilogue) — Luma only, no hero picker
+// (v1.9.6: the v1.9.5 picker in Quest was reverted — the mission is
+// Luma rescuing Lumi and Lulu, so the hero cannot be anyone else);
+// TANPA AKHIR goes to the character picker and then plays with no
+// story beats. The 'feat' line is the one-line summary under each
+// card's description.
 export const MODES = [
-  { id: 'quest', name: 'QUEST', tag: 'ALUR CERITA', color: '#ffd54f', desc: 'Alur cerita seperti sekarang — prolog, cerita fajar, teman bergabung, dan epilog.', feat: '5 KARAKTER · PROLOG · 15 MOMEN CERITA' },
+  { id: 'quest', name: 'QUEST', tag: 'ALUR CERITA', color: '#ffd54f', desc: 'Alur cerita seperti sekarang — prolog, cerita fajar, teman bergabung, dan epilog.', feat: 'LUMA · PROLOG · 15 MOMEN CERITA' },
   { id: 'endless', name: 'TANPA AKHIR', tag: 'MAIN SAMPAI BOSAN', color: '#8ff0d0', desc: 'Pilih karakter dulu, lalu main tanpa potongan cerita. Malam jalan terus.', feat: '5 KARAKTER · TANPA CERITA · MALAM TANPA AKHIR' },
 ];
 export const MODE_CARDS = [
@@ -303,10 +305,6 @@ export const COMPANION = {
   zephyrSlow: 0.75,
 };
 
-// ANDROID BUILD ONLY (v1.9.5) — which companion is freed on each join
-// night (Lumi 3, Lulu 6, Koko 9, Zephyr 12). The dawn card and the
-// rescue cutscene skip the companion that IS the player.
-export const JOIN_NIGHTS = { 3: 'lumi', 6: 'lulu', 9: 'koko', 12: 'zephyr' };
 
 export const BOSS = {
   every: 10,
