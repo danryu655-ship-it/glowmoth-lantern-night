@@ -128,8 +128,8 @@ export const CHARACTERS = [
   { id: 'luma', name: 'LUMA', tag: 'SEIMBANG', skill: 'FLARE BURST', portrait: 'luma', color: '#f59e0b', hp: 4, speed: 5, desc: 'Seimbang. Flare seperti biasa.' },
   { id: 'lumi', name: 'LUMI', tag: 'MAGNET', skill: 'MOTE MAGNET', portrait: 'lumi', color: '#8ff0d0', hp: 3, speed: 2, desc: 'Kunang ketarik dari jauh sejak malam 1.' },
   { id: 'lulu', name: 'LULU', tag: 'PELINDUNG', skill: "LULU'S SHIELD", portrait: 'lulu', color: '#8ecbff', hp: 2, speed: 3, desc: 'Mulai 2 hati + perisai tiap 60 detik.' },
-  { id: 'koko', name: 'KOKO', tag: 'PENYERANG', skill: 'KOKO EMBER', portrait: 'companionKoko', color: '#fb923c', hp: 2, speed: 4, desc: 'Bakar 1 shade terdekat tiap 8 detik.' },
-  { id: 'zephyr', name: 'ZEPHYR', tag: 'CEPAT', skill: 'ZEPHYR DRIFT', portrait: 'companionZephyr', color: '#c084fc', hp: 2, speed: 3, desc: 'Semua bahaya 25% lebih lambat.' },
+  { id: 'koko', name: 'KOKO', tag: 'PENYERANG', skill: 'KOKO EMBER', portrait: 'koko', color: '#fb923c', hp: 2, speed: 4, desc: 'Bakar 1 shade terdekat tiap 8 detik.' },
+  { id: 'zephyr', name: 'ZEPHYR', tag: 'CEPAT', skill: 'ZEPHYR DRIFT', portrait: 'zephyr', color: '#c084fc', hp: 2, speed: 3, desc: 'Semua bahaya 25% lebih lambat.' },
 ];
 export const CHARACTER_CARDS = [
   { id: 'luma', x: 85, y: 150, w: 210, h: 396 },

@@ -166,6 +166,11 @@ export function createRenderer(canvas) {
     luma: loadImage('characters/luma.jpg'),
     lumi: loadImage('characters/lumi.jpg'),
     lulu: loadImage('characters/lulu.jpg'),
+    // ANDROID BUILD ONLY (v1.9.8) — the user's new hero art: Koko and
+    // Zephyr finally have portraits of their own (before this their
+    // cards used the companion SVGs).
+    koko: loadImage('characters/koko.jpg'),
+    zephyr: loadImage('characters/zephyr.jpg'),
     darkPekat: loadImage('characters/dark-pekat.jpg'),
     titleLegends: loadImage('title-legends.jpg'),
     // ANDROID BUILD ONLY (v1.5.0) — the user's skill icons and badges.
@@ -2204,9 +2209,9 @@ export function createRenderer(canvas) {
       : state.night === 6 && state.character !== 'lulu'
         ? { img: portraits.lulu, name: 'LULU', glow: 'rgba(142, 203, 255, 0.30)' }
         : state.night === 9 && state.character !== 'koko'
-          ? { img: portraits.companionKoko, name: 'KOKO', glow: 'rgba(251, 146, 60, 0.30)' }
+          ? { img: portraits.koko, name: 'KOKO', glow: 'rgba(251, 146, 60, 0.30)' }
           : state.night === 12 && state.character !== 'zephyr'
-            ? { img: portraits.companionZephyr, name: 'ZEPHYR', glow: 'rgba(192, 132, 252, 0.30)' }
+            ? { img: portraits.zephyr, name: 'ZEPHYR', glow: 'rgba(192, 132, 252, 0.30)' }
             : null;
     if (join !== null && portraitReady(join.img)) {
       const dawnStory = STRINGS.dawnStory[state.night - 1];
