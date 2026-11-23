@@ -2334,7 +2334,11 @@ export function createRenderer(canvas) {
   // ANDROID BUILD ONLY (v1.8.0) — one in-game tip at a time: a pill under
   // the HUD bar (the HUD ends at y 98), centred, fading out in its last
   // 0.6 s. The game never pauses for a tip.
-  function drawTip(text, alpha) {
+  // ANDROID BUILD ONLY (v1.9.7) — a pulsing gold ring + arrow on the
+  // thing the tip is about (target), so the player sees WHERE to go,
+  // not just what to do. The chevron flips below the ring when the
+  // target sits near the top of the screen (HUD targets).
+  function drawTip(text, alpha, target, time) {
     const font = `500 16px ${BODY_FONT}`;
     const lines = wrapLines(text, 860, font);
     const lineH = 22;
@@ -2359,6 +2363,33 @@ export function createRenderer(canvas) {
       label(ctx, line, W / 2, y + 26 + index * lineH, { font, color: C.cream, align: 'center' });
     });
     ctx.restore();
+    if (target) {
+      const pulse = 0.5 + 0.5 * Math.sin(time * 4);
+      const r = 26 + pulse * 6;
+      ctx.save();
+      ctx.globalAlpha = alpha * (0.55 + 0.45 * pulse);
+      ctx.strokeStyle = 'rgba(255, 213, 79, 0.95)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(target.x, target.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      const flip = target.y - r - 24 <= 0;
+      const cy = flip ? target.y + r + 14 + pulse * 4 : target.y - r - 14 - pulse * 4;
+      ctx.fillStyle = 'rgba(255, 213, 79, 0.95)';
+      ctx.beginPath();
+      if (flip) {
+        ctx.moveTo(target.x, cy - 10);
+        ctx.lineTo(target.x - 9, cy + 4);
+        ctx.lineTo(target.x + 9, cy + 4);
+      } else {
+        ctx.moveTo(target.x, cy + 10);
+        ctx.lineTo(target.x - 9, cy - 4);
+        ctx.lineTo(target.x + 9, cy - 4);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
   }
 
   function draw(state, screen, best, extra = {}) {
@@ -2389,7 +2420,7 @@ export function createRenderer(canvas) {
       drawEndScreen(state, screen, best, time);
     } else {
       drawHud(state, time);
-      if (screen === SCREEN_PLAY && extra.tip) drawTip(extra.tip, extra.tipAlpha ?? 1);
+      if (screen === SCREEN_PLAY && extra.tip) drawTip(extra.tip, extra.tipAlpha ?? 1, extra.tipTarget ?? null, time);
       if (screen === SCREEN_PAUSED) drawPaused(state);
     }
     if (state.whiteFlash > 0) {

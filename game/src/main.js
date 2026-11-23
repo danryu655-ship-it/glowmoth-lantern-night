@@ -3,7 +3,7 @@
 // and victory. ?shot=title|skills|modeselect|play|dawn|victory|over stages a screenshot frame instead of starting
 // the loop; ?seed=N makes a run's patterns repeatable.
 
-import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, HUD_BUTTONS, LANTERN, MODE_CARDS, PAUSE_BUTTONS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
+import { BADGES_KEY, BEST_KEY, BOSS, BOSS_KINDS, CHARACTER_CARDS, CUTSCENE, CUTSCENES, EPILOGUE_KEY, FIELD, HUD_BUTTONS, LANTERN, MODE_CARDS, PAUSE_BUTTONS, PROLOGUE_KEY, RUN, SELECT_KEY, STEP, STRINGS, SKILL_BUTTON, SKILL_TIPS, SKIN_BUTTON, SKIN_CARDS, SKIN_KEY, BACK_BUTTON, START_BUTTON, TIPS, bossKind } from './config.js';
 import { autopilotDirection, autopilotFlare } from './autopilot.js';
 import { createAudio } from './audio.js';
 import { createInput } from './input.js';
@@ -193,7 +193,12 @@ function runGame() {
     // ANDROID BUILD ONLY (v1.8.0) — the first tip: how to collect light.
     // Shown on the first run after the game is opened; the in-memory
     // flag in tips.js keeps it from ever repeating while the game stays open.
-    if (!demo && world.state.night === 1) tips.show('collect', ambientClock);
+    // ANDROID BUILD ONLY (v1.9.7) — the hero's skill tip queues right
+    // after it: what the skill does and what the player does.
+    if (!demo && world.state.night === 1) {
+      tips.show('collect', ambientClock);
+      tips.show('skill', ambientClock, SKILL_TIPS[selection.character]);
+    }
   }
 
   function startRun() {
@@ -223,6 +228,42 @@ function runGame() {
   // appear while playing, at the moment each one matters.
   function enterPlay() {
     startPlay();
+  }
+
+  // ANDROID BUILD ONLY (v1.9.7) — where the tip's pointer should point:
+  // the nearest mote / shade, the next unlit lantern, the dew drop, or
+  // the HUD clusters (sparks, lives). Null when there is nothing to
+  // point at — the tip still shows as text.
+  function tipTargetPoint(target) {
+    const state = world.state;
+    const nearest = (items) => {
+      let best = null;
+      let bestDist = Infinity;
+      for (const item of items) {
+        const d = Math.hypot(item.x - state.player.x, item.y - state.player.y);
+        if (d < bestDist) { bestDist = d; best = item; }
+      }
+      return best;
+    };
+    if (target === 'mote') {
+      const mote = nearest(state.motes);
+      return mote ? { x: mote.x, y: mote.y } : null;
+    }
+    if (target === 'shade') {
+      const shade = nearest(state.hazards.filter((h) => h.kind === 'shade'));
+      return shade ? { x: shade.x, y: shade.y } : null;
+    }
+    if (target === 'lantern') {
+      const pos = LANTERN.positions[state.litCount];
+      return pos ? { x: pos.x, y: pos.y } : null;
+    }
+    if (target === 'dew') return state.dew ? { x: state.dew.x, y: state.dew.y } : null;
+    if (target === 'sparks') return { x: FIELD.width - 72, y: 50 };
+    if (target === 'lives') {
+      const max = state.maxLives ?? RUN.lives;
+      return { x: FIELD.width - 196 - (max - 3) * 34 + (max - 1) * 17, y: 50 };
+    }
+    return null;
   }
 
   function finishRun(victory) {
@@ -722,7 +763,7 @@ function runGame() {
       else enterDawn();
     }
     const tip = tips.active(ambientClock);
-    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage, epilogueCard, badges, skin, selection, tip: tip?.text ?? null, tipAlpha: tip?.alpha ?? 0 });
+    renderer.draw(world.state, screen, best, { timeOffset: screen === SCREEN_CUTSCENE || screen === SCREEN_DAWN || screen === SCREEN_EPILOGUE || screen === SCREEN_OVER || screen === SCREEN_PROLOGUE || screen === SCREEN_VICTORY ? ambientClock : 0, demo, cutscene, prologuePage, epiloguePage, epilogueCard, badges, skin, selection, tip: tip?.text ?? null, tipAlpha: tip?.alpha ?? 0, tipTarget: tip?.target ? tipTargetPoint(tip.target) : null });
     input.endFrame();
   }
 
