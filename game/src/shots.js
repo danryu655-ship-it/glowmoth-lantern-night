@@ -14,6 +14,19 @@ function placeMote(x, y, phase) {
   return { x, y, vx: 0, vy: 0, phase, age: 2.2, life: 16, r: 11, alive: true };
 }
 
+// ANDROID BUILD ONLY (v1.9.7) — the tip pointer's target for the
+// staged 'tips' frame: the mote nearest the staged player, the same
+// rule the live game uses in tipTargetPoint().
+function nearestMote(state) {
+  let best = null;
+  let bestDist = Infinity;
+  for (const mote of state.motes) {
+    const d = Math.hypot(mote.x - state.player.x, mote.y - state.player.y);
+    if (d < bestDist) { bestDist = d; best = mote; }
+  }
+  return best ? { x: best.x, y: best.y } : null;
+}
+
 function lightLanterns(state, count) {
   for (let index = 0; index < state.lanterns.length; index += 1) {
     state.lanterns[index].lit = index < count;
@@ -102,7 +115,7 @@ export function stageShot(name, world, best) {
     ];
     state.dew = null;
     state.particles = [];
-    return { screen: SCREEN_PLAY, best, tip: TIPS[0].text };
+    return { screen: SCREEN_PLAY, best, tip: TIPS[0].text, tipTarget: nearestMote(state) };
   }
 
   // ANDROID BUILD ONLY (v1.6.0) — the skin picker, Golden Sun selected.

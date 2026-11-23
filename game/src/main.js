@@ -110,7 +110,7 @@ function runShot(name) {
   if (Number.isFinite(tParam)) world.state.time = 12.4 + tParam;
   let painted = 0;
   function paint() {
-    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage, epilogueCard: scene.epilogueCard ?? false, badges: readBadges(), skin: scene.skin ?? readSkin(), selection: scene.selection ?? null, tip: scene.tip ?? null, tipAlpha: 1 });
+    renderer.draw(world.state, scene.screen, scene.best, { cutscene: scene.cutscene, prologuePage: scene.prologuePage, epiloguePage: scene.epiloguePage, epilogueCard: scene.epilogueCard ?? false, badges: readBadges(), skin: scene.skin ?? readSkin(), selection: scene.selection ?? null, tip: scene.tip ?? null, tipAlpha: 1, tipTarget: scene.tipTarget ?? null });
     painted += 1;
     if (painted < 2) requestAnimationFrame(paint);
     else {
